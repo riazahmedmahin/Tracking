@@ -12,7 +12,8 @@ class UserSession {
     return _instance;
   }
   UserSession._internal();
-  
+
+
   String? _role;
   String? _department; // For supervisors: 'Sewing', 'Cutting', 'Finishing'
   int _selectedUnit = -1; // For Sewing supervisors: which unit they're assigned to (-1 = all/none)
