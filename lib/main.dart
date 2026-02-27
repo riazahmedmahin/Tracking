@@ -1260,7 +1260,6 @@ class _SupervisorInputScreenState extends State<SupervisorInputScreen> {
         print('Warning: supervisor line has no department set');
         return;
       }
-
       // UNIT VALIDATION: Sewing supervisors can only sync their assigned unit
       if (supervisorDept == 'Sewing') {
         final supervisorUnit = UserSession().selectedUnit;
