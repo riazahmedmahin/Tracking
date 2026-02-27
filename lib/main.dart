@@ -230,7 +230,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final List<int> _units = [1, 2];
 
   bool _passwordVisible = false;
-  bool _rememberMe = false;
 
   @override
   void dispose() {
@@ -1225,6 +1224,29 @@ class SupervisorInputScreen extends StatefulWidget {
 }
 
 class _SupervisorInputScreenState extends State<SupervisorInputScreen> {
+  String? expandedCardKey; // format: "orderIndex_lineIndex"
+  
+  // Store persistent TextEditingControllers per line
+  final Map<String, TextEditingController> cuttingControllers = {};
+  final Map<String, TextEditingController> achieveControllers = {};
+  final Map<String, TextEditingController> qcControllers = {};
+  final Map<String, TextEditingController> polyControllers = {};
+  final Map<String, TextEditingController> ironControllers = {};
+  
+  // Store last saved values per line to display after save
+  final Map<String, Map<String, String>> savedValues = {};
+
+  @override
+  void dispose() {
+    // Dispose all controllers
+    cuttingControllers.values.forEach((controller) => controller.dispose());
+    achieveControllers.values.forEach((controller) => controller.dispose());
+    qcControllers.values.forEach((controller) => controller.dispose());
+    polyControllers.values.forEach((controller) => controller.dispose());
+    ironControllers.values.forEach((controller) => controller.dispose());
+    super.dispose();
+  }
+
   void _logout() {
     Navigator.of(context).pushReplacementNamed('/');
   }
@@ -1460,7 +1482,7 @@ class _SupervisorInputScreenState extends State<SupervisorInputScreen> {
         backgroundColor: Colors.orange,
         actions: [
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(12.0),
             child: GestureDetector(
               onTap: _logout,
               child: const Icon(Icons.logout),
@@ -1498,31 +1520,32 @@ class _SupervisorInputScreenState extends State<SupervisorInputScreen> {
               ),
             )
           : ListView.builder(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(12),
               itemCount: filteredOrders.length,
-              itemBuilder: (context, orderIndex) {
-                final order = filteredOrders[orderIndex];
+              itemBuilder: (context, filteredIndex) {
+                final order = filteredOrders[filteredIndex];
+                // Get actual order index from global manager to get correct hour number
+                final actualOrderIndex = orderManager.getAllOrders().indexOf(order);
+                final hourNumber = (actualOrderIndex + 1).toString().padLeft(2, '0');
+                
                 return Card(
                   margin: const EdgeInsets.only(bottom: 16),
-                  child: ExpansionTile(
-                    title: Text(
-                      order.orderName,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    subtitle: Text(
-                      '${order.lines.length} lines - ${order.submittedBySupervisor ? "Submitted" : "Pending"}',
-                      style: TextStyle(
-                        color: order.submittedBySupervisor
-                            ? Colors.green
-                            : Colors.orange,
-                      ),
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Padding(
                         padding: const EdgeInsets.all(16),
+                        child: Text(
+                          'Admin Hour $hourNumber - $supervisorDepartment',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                      Divider(height: 1, color: Colors.grey[300]),
+                      Padding(
+                        padding: const EdgeInsets.all(10),
                         child: Column(
                           children: List.generate(
                             order.lines.length,
@@ -1533,6 +1556,7 @@ class _SupervisorInputScreenState extends State<SupervisorInputScreen> {
                                 order,
                                 line,
                                 lineIndex,
+                                actualOrderIndex,
                               );
                             },
                           ),
@@ -1877,6 +1901,7 @@ class _SupervisorInputScreenState extends State<SupervisorInputScreen> {
     Order order,
     OrderLineData line,
     int lineIndex,
+    int orderIndex,
   ) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -1886,317 +1911,62 @@ class _SupervisorInputScreenState extends State<SupervisorInputScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header with Line Number, Status
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Line ${lineIndex + 1}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-                if (line.dailyCutting > 0 || line.dailyInput > 0)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.green.shade100,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: const Text(
-                      'Filled',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.green,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            _buildReadOnlyField('Style', line.style),
-            const SizedBox(height: 8),
-            _buildReadOnlyField('Color', line.color),
-            const SizedBox(height: 8),
-            _buildReadOnlyField('Buyer', line.buyerName),
-            const SizedBox(height: 8),
-            _buildReadOnlyField('Target', line.target.toString()),
-            const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: () {
-                _showFillDialog(context, order, line, lineIndex);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
-              ),
-              child: const Text('Fill Data'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showFillDialog(
-    BuildContext context,
-    Order order,
-    OrderLineData line,
-    int lineIndex,
-  ) {
-    final cuttingController = TextEditingController(
-      text: line.dailyCutting == 0 ? '' : line.dailyCutting.toString(),
-    );
-    final inputController = TextEditingController(
-      text: line.dailyInput == 0 ? '' : line.dailyInput.toString(),
-    );
-    final achieveController = TextEditingController(
-      text: line.achieve == 0 ? '' : line.achieve.toString(),
-    );
-    final ironController = TextEditingController(text: '');
-    final notesController = TextEditingController(
-      text: line.supervisorNotes,
-    );
-
-    final isCuttingFilled = line.dailyCutting > 0;
-    final isInputFilled = line.dailyInput > 0;
-    final isAchieveFilled = line.achieve > 0;
-
-    InputDecoration fieldDecoration(String label, {String? hint}) {
-      return InputDecoration(
-        labelText: label,
-        hintText: hint,
-        isDense: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-        filled: true,
-        fillColor: Colors.white,
-      );
-    }
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return Dialog(
-          insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          child: StatefulBuilder(
-            builder: (context, setDialogState) {
-
-              return SizedBox(
-                width: double.infinity,
-                height: MediaQuery.of(context).size.height * 0.82,
-                child: Column(
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              'Fill Line ${lineIndex + 1} - ${line.style}',
-                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.close),
-                            onPressed: () => Navigator.pop(context),
-                          ),
-                        ],
+                    Text(
+                      'Line ${lineIndex + 1} ',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
                       ),
                     ),
-                    const Divider(height: 1),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildReadOnlyField('Style', line.style),
-                            const SizedBox(height: 8),
-                            _buildReadOnlyField('Color', line.color),
-                            const SizedBox(height: 8),
-                            _buildReadOnlyField('Buyer', line.buyerName),
-                            const SizedBox(height: 8),
-                            _buildReadOnlyField('Target', line.target.toString()),
-                            const SizedBox(height: 12),
-
-                            const Text(
-                              'Fill Empty Fields Only',
-                              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.orange),
-                            ),
-                            const SizedBox(height: 10),
-
-                            // Department-specific fields
-                            if (line.department == 'Cutting') ...[
-                              if (isCuttingFilled)
-                                _buildReadOnlyField('Daily Cutting (Filled by Admin)', line.dailyCutting.toString())
-                              else
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    TextField(
-                                      controller: cuttingController,
-                                      decoration: fieldDecoration('Daily Cutting', hint: 'Enter value'),
-                                      keyboardType: TextInputType.number,
-                                      onChanged: (_) => setDialogState(() {}),
-                                    ),
-                                    const SizedBox(height: 12),
-                                  ],
-                                ),
-                            ] else if (line.department == 'Sewing') ...[
-                              if (isAchieveFilled)
-                                _buildReadOnlyField('Achieve (Filled by Admin)', line.achieve.toString())
-                              else
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    TextField(
-                                      controller: achieveController,
-                                      decoration: fieldDecoration('Achieve', hint: 'Enter value'),
-                                      keyboardType: TextInputType.number,
-                                    ),
-                                    const SizedBox(height: 12),
-                                  ],
-                                ),
-                            ] else if (line.department == 'Finishing') ...[
-                              if (line.qcTarget > 0) _buildReadOnlyField('QC Target', line.qcTarget.toString()),
-                              if (line.polyTarget > 0) _buildReadOnlyField('Poly Target', line.polyTarget.toString()),
-                              if (line.ironTarget > 0) _buildReadOnlyField('Iron Target', line.ironTarget.toString()),
-                              const SizedBox(height: 6),
-                              TextField(
-                                controller: cuttingController,
-                                decoration: fieldDecoration('QC Achieve'),
-                                keyboardType: TextInputType.number,
-                              ),
-                              const SizedBox(height: 8),
-                              TextField(
-                                controller: inputController,
-                                decoration: fieldDecoration('Poly Achieve'),
-                                keyboardType: TextInputType.number,
-                              ),
-                              const SizedBox(height: 8),
-                              TextField(
-                                controller: ironController,
-                                decoration: fieldDecoration('Iron Achieve'),
-                                keyboardType: TextInputType.number,
-                              ),
-                             // const SizedBox(height: 12),
-                            ],
-
-                            // // Daily Input (common for Cutting & Sewing)
-                            // if (line.department == 'Cutting' || line.department == 'Sewing')
-                            //   Column(
-                            //     crossAxisAlignment: CrossAxisAlignment.start,
-                            //     children: [
-                            //       if (isInputFilled)
-                            //         _buildReadOnlyField('Daily Input (Filled by Admin)', line.dailyInput.toString())
-                            //       else
-                            //         TextField(
-                            //           controller: inputController,
-                            //           decoration: fieldDecoration('Daily Input', hint: 'Enter value'),
-                            //           keyboardType: TextInputType.number,
-                            //           onChanged: (_) => setDialogState(() {}),
-                            //         ),
-                            //       const SizedBox(height: 12),
-                            //     ],
-                            //   ),
-
-                            // // Total Input preview for Cutting
-                            // if (line.department == 'Cutting')
-                            //   Row(
-                            //     children: [
-                            //       const Text('Total Input: ', style: TextStyle(color: Colors.grey)),
-                            //       Text('${parsedCutting() + parsedInput()}', style: const TextStyle(fontWeight: FontWeight.w600)),
-                            //     ],
-                            //   ),
-
-                            // const SizedBox(height: 12),
-                            // //const Text('Notes (Optional)', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                            // const SizedBox(height: 6),
-                            // TextField(
-                            //   controller: notesController,
-                            //   decoration: fieldDecoration('Notes'),
-                            //   maxLines: 2,
-                            // ),
-                            //const SizedBox(height: 8),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    // Actions
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-                          const SizedBox(width: 8),
-                          ElevatedButton(
-                            onPressed: () {
-                              final updatedLine = OrderLineData(
-                                buyerName: line.buyerName,
-                                style: line.style,
-                                item: line.item,
-                                color: line.color,
-                                target: line.target,
-                                operator: line.operator,
-                                shortOperator: line.shortOperator,
-                                bartechOperator: line.bartechOperator,
-                                bartechHelper: line.bartechHelper,
-                                unitNumber: line.unitNumber,
-                                lineNumber: line.lineNumber,
-                                department: line.department,
-                                // set based on department
-                                dailyCutting: (line.department == 'Cutting')
-                                    ? (isCuttingFilled ? line.dailyCutting : (int.tryParse(cuttingController.text) ?? 0))
-                                    : line.dailyCutting,
-                                dailyInput: isInputFilled ? line.dailyInput : (int.tryParse(inputController.text) ?? 0),
-                                achieve: (line.department == 'Sewing')
-                                    ? (isAchieveFilled ? line.achieve : (int.tryParse(achieveController.text) ?? 0))
-                                    : line.achieve,
-                                supervisorNotes: notesController.text,
-                                qcTarget: line.qcTarget,
-                                polyTarget: line.polyTarget,
-                                ironTarget: line.ironTarget,
-                              );
-
-                              if (line.department == 'Finishing') {
-                                final qc = int.tryParse(cuttingController.text) ?? 0;
-                                final poly = int.tryParse(inputController.text) ?? 0;
-                                final iron = int.tryParse(ironController.text) ?? 0;
-                                _syncFinishingToAdmin(line, qc, poly, iron);
-                              }
-
-                              final orderIndex = orderManager.getAllOrders().indexOf(order);
-                              orderManager.updateOrderLine(orderIndex, lineIndex, updatedLine);
-                              _syncToAdminData(updatedLine, lineIndex);
-
-                              setState(() {});
-                              Navigator.pop(context);
-
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Data submitted to Admin'), backgroundColor: Colors.green),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                            child: const Text('Submit'),
-                          ),
-                        ],
+                    const SizedBox(height: 4),
+                    Text(
+                      '${line.color} | ${line.buyerName}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
                       ),
                     ),
                   ],
                 ),
-              );
-            },
-          ),
-        );
-      },
+                Row(
+                  children: [
+                    if (line.dailyCutting > 0 || line.dailyInput > 0 || line.achieve > 0)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade100,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text(
+                          'Filled',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.green,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+            
+            // Form section - always visible
+            const Divider(),
+            _buildInlineForm(context, order, line, lineIndex, orderIndex),
+          ],
+        ),
+      ),
     );
   }
 
@@ -2222,31 +1992,268 @@ class _SupervisorInputScreenState extends State<SupervisorInputScreen> {
     }
   }
 
-  Widget _buildReadOnlyField(String label, String value) {
+  // Inline form widget - renders directly on page without popup
+  Widget _buildInlineForm(
+    BuildContext context,
+    Order order,
+    OrderLineData line,
+    int lineIndex,
+    int orderIndex,
+  ) {
+    String lineKey = '${orderIndex}_$lineIndex';
+    
+    // Get or create persistent controllers for this line
+    if (!cuttingControllers.containsKey(lineKey)) {
+      cuttingControllers[lineKey] = TextEditingController(
+        text: savedValues[lineKey]?['cutting'] ?? 
+            (line.dailyCutting == 0 ? '' : line.dailyCutting.toString()),
+      );
+    }
+    if (!achieveControllers.containsKey(lineKey)) {
+      achieveControllers[lineKey] = TextEditingController(
+        text: savedValues[lineKey]?['achieve'] ?? 
+            (line.achieve == 0 ? '' : line.achieve.toString()),
+      );
+    }
+    if (!qcControllers.containsKey(lineKey)) {
+      qcControllers[lineKey] = TextEditingController(
+        text: savedValues[lineKey]?['qc'] ?? '',
+      );
+    }
+    if (!polyControllers.containsKey(lineKey)) {
+      polyControllers[lineKey] = TextEditingController(
+        text: savedValues[lineKey]?['poly'] ?? '',
+      );
+    }
+    if (!ironControllers.containsKey(lineKey)) {
+      ironControllers[lineKey] = TextEditingController(
+        text: savedValues[lineKey]?['iron'] ?? '',
+      );
+    }
+
+    final cuttingController = cuttingControllers[lineKey]!;
+    final achieveController = achieveControllers[lineKey]!;
+    final qcController = qcControllers[lineKey]!;
+    final polyController = polyControllers[lineKey]!;
+    final ironController = ironControllers[lineKey]!;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 11,
-            color: Colors.grey,
-          ),
-        ),
+        const SizedBox(height: 12),
+        
+        // Read-only field: Buyer Name
+        const Text('Buyer Name', style: TextStyle(fontSize: 12, color: Colors.grey)),
         const SizedBox(height: 4),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
             border: Border.all(color: Colors.grey.shade300),
             borderRadius: BorderRadius.circular(6),
-            color: Colors.grey.shade50,
+            color: Colors.grey.shade100,
           ),
-          child: Text(
-            value,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
+          child: Text(line.buyerName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+        ),
+        const SizedBox(height: 12),
+        
+        // Read-only field: Style
+        const Text('Style', style: TextStyle(fontSize: 12, color: Colors.grey)),
+        const SizedBox(height: 4),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(6),
+            color: Colors.grey.shade100,
+          ),
+          child: Text(line.style, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+        ),
+        const SizedBox(height: 12),
+        
+        // Read-only field: Color
+        const Text('Color', style: TextStyle(fontSize: 12, color: Colors.grey)),
+        const SizedBox(height: 4),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(6),
+            color: Colors.grey.shade100,
+          ),
+          child: Text(line.color, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+        ),
+        const SizedBox(height: 12),
+        
+        // Read-only field: Target
+        const Text('Target', style: TextStyle(fontSize: 12, color: Colors.grey)),
+        const SizedBox(height: 4),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(6),
+            color: Colors.grey.shade100,
+          ),
+          child: Text(line.target.toString(), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+        ),
+        const SizedBox(height: 16),
+        
+        // Department-specific input fields
+        if (line.department == 'Cutting') ...[
+          const Text('Daily Cutting', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          TextField(
+            controller: cuttingController,
+            decoration: InputDecoration(
+              hintText: 'Enter quantity',
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            ),
+            keyboardType: TextInputType.number,
+          ),
+        ] else if (line.department == 'Sewing') ...[
+          const Text('Achieve', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          TextField(
+            controller: achieveController,
+            decoration: InputDecoration(
+              hintText: 'Enter quantity',
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            ),
+            keyboardType: TextInputType.number,
+          ),
+        ] else if (line.department == 'Finishing') ...[
+          const Text('QC Achieve', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          TextField(
+            controller: qcController,
+            decoration: InputDecoration(
+              hintText: 'Enter QC quantity',
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            ),
+            keyboardType: TextInputType.number,
+          ),
+          const SizedBox(height: 12),
+          const Text('Poly Achieve', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          TextField(
+            controller: polyController,
+            decoration: InputDecoration(
+              hintText: 'Enter Poly quantity',
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            ),
+            keyboardType: TextInputType.number,
+          ),
+          const SizedBox(height: 12),
+          const Text('Iron Achieve', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          TextField(
+            controller: ironController,
+            decoration: InputDecoration(
+              hintText: 'Enter Iron quantity',
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            ),
+            keyboardType: TextInputType.number,
+          ),
+        ],
+        
+        const SizedBox(height: 18),
+        
+        // Save button (full width green)
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () {
+              // Get values from controllers before updating
+              String cuttingValue = cuttingController.text;
+              String achieveValue = achieveController.text;
+              String qcValue = qcController.text;
+              String polyValue = polyController.text;
+              String ironValue = ironController.text;
+
+              // Create updated line with new values
+              final updatedLine = OrderLineData(
+                buyerName: line.buyerName,
+                style: line.style,
+                item: line.item,
+                color: line.color,
+                target: line.target,
+                operator: line.operator,
+                shortOperator: line.shortOperator,
+                bartechOperator: line.bartechOperator,
+                bartechHelper: line.bartechHelper,
+                unitNumber: line.unitNumber,
+                lineNumber: line.lineNumber,
+                department: line.department,
+                dailyCutting: (line.department == 'Cutting')
+                    ? (int.tryParse(cuttingValue) ?? 0)
+                    : line.dailyCutting,
+                achieve: (line.department == 'Sewing')
+                    ? (int.tryParse(achieveValue) ?? 0)
+                    : line.achieve,
+                dailyInput: line.dailyInput,
+                supervisorNotes: line.supervisorNotes,
+                qcTarget: line.qcTarget,
+                polyTarget: line.polyTarget,
+                ironTarget: line.ironTarget,
+              );
+
+              // Sync to admin data
+              if (line.department == 'Finishing') {
+                final qc = int.tryParse(qcValue) ?? 0;
+                final poly = int.tryParse(polyValue) ?? 0;
+                final iron = int.tryParse(ironValue) ?? 0;
+                _syncFinishingToAdmin(line, qc, poly, iron);
+              }
+
+              final orderIndex = orderManager.getAllOrders().indexOf(order);
+              orderManager.updateOrderLine(orderIndex, lineIndex, updatedLine);
+              _syncToAdminData(updatedLine, lineIndex);
+
+              // Store values in persistent map AFTER saving
+              if (!savedValues.containsKey(lineKey)) {
+                savedValues[lineKey] = {};
+              }
+              savedValues[lineKey]!['cutting'] = cuttingValue;
+              savedValues[lineKey]!['achieve'] = achieveValue;
+              savedValues[lineKey]!['qc'] = qcValue;
+              savedValues[lineKey]!['poly'] = polyValue;
+              savedValues[lineKey]!['iron'] = ironValue;
+
+              // Don't clear controllers - keep them with their current values
+              // Update state to refresh UI
+              setState(() {});
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Data saved successfully'),
+                  backgroundColor: Colors.green,
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
+              ),
+            ),
+            child: const Text(
+              'Save',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
           ),
         ),
@@ -4088,7 +4095,6 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
   bool showDailyView = false;
   int selectedUnitTab = -1; // -1 means no unit selected (default view), otherwise unit number
   late PageController _pageController;
-  int _currentPage = 0;
 
   @override
   void initState() {
@@ -4344,7 +4350,7 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
                 ),
               );
             }).toList(),
-            Text("")
+            
           ],
         ),
         
