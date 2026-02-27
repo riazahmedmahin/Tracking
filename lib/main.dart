@@ -11,7 +11,6 @@ class UserSession {
   factory UserSession() {
     return _instance;
   }
-
   UserSession._internal();
   
   String? _role;
