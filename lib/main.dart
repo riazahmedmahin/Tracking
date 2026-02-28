@@ -327,7 +327,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 12),
                   const Text(
-                    'KTL Production',
+                    'KTL Daily \nProduction Update',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: Colors.black87),
                   ),
@@ -461,6 +461,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ],
                   ),
                   const SizedBox(height: 10),
+                  Text('version 1.0.0', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w700, fontSize: 12)),
                 ],
               ),
             ),
