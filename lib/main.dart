@@ -202,14 +202,205 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const LoginScreen(),
+      home: const SplashScreen(),
       routes: {
         '/admin': (context) => const ProductionTrackerApp(),
         '/supervisor': (context) => const SupervisorInputScreen(),
+        '/login': (context) => const LoginScreen(),
       },
     );
   }
 }
+
+// ==================== SPLASH SCREEN ====================
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
+    );
+
+    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+
+    _animationController.forward();
+
+    // Navigate after 3 seconds
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        Navigator.of(context).pushReplacementNamed('/login');
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Colors.blue.shade600,
+              Colors.blue.shade800,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ScaleTransition(
+                scale: _scaleAnimation,
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: Container(
+                    height: 140,
+                    width: 140,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                      color: Colors.white,
+                    ),
+                    padding: const EdgeInsets.all(8),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.network(
+                        'https://ktlbd.com/logos/ktl-logo.png',
+                        fit: BoxFit.contain,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Colors.blue.shade400, Colors.blue.shade600],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                            ),
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                value: loadingProgress.expectedTotalBytes != null
+                                    ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                    : null,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white.withOpacity(0.8)),
+                                strokeWidth: 2,
+                              ),
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Colors.blue.shade400, Colors.blue.shade600],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                            ),
+                            child: const Center(
+                              child: Icon(Icons.factory, color: Colors.white, size: 70),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 30),
+              FadeTransition(
+                opacity: _fadeAnimation,
+                child: const Text(
+                  'KTL',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    letterSpacing: 2,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              FadeTransition(
+                opacity: _fadeAnimation,
+                child: const Text(
+                  'KATTALI TEXTILE LIMITED',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white70,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              FadeTransition(
+                opacity: _fadeAnimation,
+                child: const Text(
+                  'Production Management System',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white60,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 50),
+              FadeTransition(
+                opacity: _fadeAnimation,
+                child: SizedBox(
+                  width: 50,
+                  height: 50,
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white.withOpacity(0.8)),
+                    strokeWidth: 2.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -314,18 +505,50 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   const SizedBox(height: 8),
                   Container(
-                    height: 70,
-                    width: 70,
+                    height: 100,
+                    width: 100,
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(colors: [Colors.blue.shade600, Colors.blue.shade800], begin: Alignment.topLeft, end: Alignment.bottomRight),
                       borderRadius: BorderRadius.circular(16),
-                      boxShadow: [BoxShadow(color: Colors.blue.withOpacity(0.4), blurRadius: 12, offset: const Offset(0, 4))],
+                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 12, offset: const Offset(0, 4))],
                     ),
-                    child: const Center(
-                      child: Icon(Icons.factory, color: Colors.white, size: 40),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.network(
+                        'https://ktlbd.com/logos/ktl-logo.png',
+                        fit: BoxFit.contain,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(colors: [Colors.blue.shade600, Colors.blue.shade800], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                value: loadingProgress.expectedTotalBytes != null
+                                    ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                    : null,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white.withOpacity(0.8)),
+                                strokeWidth: 2,
+                              ),
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(colors: [Colors.blue.shade600, Colors.blue.shade800], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Center(
+                              child: Icon(Icons.factory, color: Colors.white, size: 50),
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                   const Text(
                     'KTL Daily \nProduction Update',
                     textAlign: TextAlign.center,
@@ -346,7 +569,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       prefixIcon: Icon(Icons.email_outlined, color: Colors.blue.shade600),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
                       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300, width: 1.5)),
-                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.blue.shade600, width: 2)),
+                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300, width: 2)),
                       filled: true,
                       fillColor: Colors.blue.shade50,
                       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
@@ -401,13 +624,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       value: _selectedDepartment,
                       decoration: InputDecoration(
                         labelText: 'Select Department *',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.amber.shade300)),
-                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.amber.shade300, width: 1.5)),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.amber.shade600, width: 2)),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300, width: 1.5)),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.blue.shade600, width: 2)),
                         filled: true,
-                        fillColor: Colors.amber.shade50,
+                        fillColor: Colors.blue.shade50,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                        prefixIcon: Icon(Icons.work_outline, color: Colors.amber.shade700),
+                        prefixIcon: Icon(Icons.work_outline, color: Colors.blue.shade600),
                       ),
                       items: _departments.map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
                       onChanged: (v) => setState(() { _selectedDepartment = v; _selectedUnit = null; }),
@@ -421,13 +644,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       value: _selectedUnit,
                       decoration: InputDecoration(
                         labelText: 'Select Unit *',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.green.shade300)),
-                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.green.shade300, width: 1.5)),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.green.shade600, width: 2)),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300, width: 1.5)),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.blue.shade600, width: 2)),
                         filled: true,
-                        fillColor: Colors.green.shade50,
+                        fillColor: Colors.blue.shade50,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                        prefixIcon: Icon(Icons.pin_outlined, color: Colors.green.shade700),
+                        prefixIcon: Icon(Icons.pin_outlined, color: Colors.blue.shade700),
                       ),
                       items: _units.map((u) => DropdownMenuItem(value: u, child: Text('Unit $u'))).toList(),
                       onChanged: (v) => setState(() => _selectedUnit = v),
@@ -461,7 +684,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ],
                   ),
                   const SizedBox(height: 10),
-                  Text('version 1.0.0', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w700, fontSize: 12)),
+                  Text('version 1.0.0', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w400, fontSize: 12)),
                 ],
               ),
             ),
