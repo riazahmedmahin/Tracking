@@ -5603,7 +5603,8 @@ Widget _buildSewingLineCardUI({
   required Map<int, int> lineHourlyData,
   required Map<int, int> lineTargetData,
   required bool showDailyView,
-}) {
+}) 
+{
     // Calculate totals for this line
     int totalTarget = lineTargetData.values.fold(0, (sum, val) => sum + val);
     int totalAchieve = lineHourlyData.values.fold(0, (sum, val) => sum + val);
