@@ -4896,113 +4896,118 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
             ],
             const SizedBox(height: 12),
             ...sameDepReports.map((report) {
-              return Container(
-                padding: const EdgeInsets.all(10),
-                margin: const EdgeInsets.only(bottom: 8),
-                decoration: BoxDecoration(
-                  color: Colors.grey[50],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Department header with buyer, style, color
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.blue[50],
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: Colors.blue[200]!),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            report.department,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                              color: Colors.blue,
+              // For Sewing department, show each line separately
+              if (report.department == 'Sewing') {
+                return _buildSewingLineCards(report, showDailyView);
+              } else {
+                return Container(
+                  padding: const EdgeInsets.all(10),
+                  margin: const EdgeInsets.only(bottom: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Department header with buyer, style, color
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.blue[50],
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: Colors.blue[200]!),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              report.department,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                                color: Colors.blue,
+                              ),
                             ),
+                            const SizedBox(height: 6),
+                            Wrap(
+                              alignment: WrapAlignment.start,
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: [
+                                // Show buyers/style/color/item using hourlyData when available for any department
+                                // For Sewing with selected unit, filter data accordingly
+                                if (report.hourlyData.isNotEmpty && report.hourlyData.values.any((h) => h.buyerNames.isNotEmpty))
+                                  _buildInfoChip('🏭 Buyer', _getFilteredHourlyData(report.hourlyData, report.department).values
+                                    .where((h) => h.buyerNames.isNotEmpty)
+                                    .map((h) => h.buyerNames.join(', '))
+                                    .toList()
+                                    .join(', ')),
+                                _buildInfoChip('🎨 Style', 
+                                  report.hourlyData.isNotEmpty
+                                    ? (report.hourlyData.values.firstWhere((h) => h.style.isNotEmpty, orElse: () => report.hourlyData.values.first).style.isNotEmpty 
+                                      ? report.hourlyData.values.firstWhere((h) => h.style.isNotEmpty, orElse: () => report.hourlyData.values.first).style
+                                      : report.styleName)
+                                    : report.styleName),
+                                _buildInfoChip('🌈 Color', 
+                                  report.hourlyData.isNotEmpty
+                                    ? (report.hourlyData.values.firstWhere((h) => h.color.isNotEmpty, orElse: () => report.hourlyData.values.first).color.isNotEmpty 
+                                      ? report.hourlyData.values.firstWhere((h) => h.color.isNotEmpty, orElse: () => report.hourlyData.values.first).color
+                                      : report.color)
+                                    : report.color),
+                                _buildInfoChip('📦 Item', 
+                                  report.hourlyData.isNotEmpty
+                                    ? (report.hourlyData.values.firstWhere((h) => h.item.isNotEmpty, orElse: () => report.hourlyData.values.first).item.isNotEmpty 
+                                      ? report.hourlyData.values.firstWhere((h) => h.item.isNotEmpty, orElse: () => report.hourlyData.values.first).item
+                                      : report.itemType)
+                                    : report.itemType),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      // Stats
+                      Wrap(
+                        spacing: 12,
+                        children: [
+                          _buildReportStat(
+                            'Target',
+                            '${_calculateDailyTarget(report, selectedUnit: selectedUnitTab)} Pcs',
                           ),
-                          const SizedBox(height: 6),
-                          Wrap(
-                            alignment: WrapAlignment.start,
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: [
-                              // Show buyers/style/color/item using hourlyData when available for any department
-                              // For Sewing with selected unit, filter data accordingly
-                              if (report.hourlyData.isNotEmpty && report.hourlyData.values.any((h) => h.buyerNames.isNotEmpty))
-                                _buildInfoChip('🏭 Buyer', _getFilteredHourlyData(report.hourlyData, report.department).values
-                                  .where((h) => h.buyerNames.isNotEmpty)
-                                  .map((h) => h.buyerNames.join(', '))
-                                  .toList()
-                                  .join(', ')),
-                              _buildInfoChip('🎨 Style', 
-                                report.hourlyData.isNotEmpty
-                                  ? (report.hourlyData.values.firstWhere((h) => h.style.isNotEmpty, orElse: () => report.hourlyData.values.first).style.isNotEmpty 
-                                    ? report.hourlyData.values.firstWhere((h) => h.style.isNotEmpty, orElse: () => report.hourlyData.values.first).style
-                                    : report.styleName)
-                                  : report.styleName),
-                              _buildInfoChip('🌈 Color', 
-                                report.hourlyData.isNotEmpty
-                                  ? (report.hourlyData.values.firstWhere((h) => h.color.isNotEmpty, orElse: () => report.hourlyData.values.first).color.isNotEmpty 
-                                    ? report.hourlyData.values.firstWhere((h) => h.color.isNotEmpty, orElse: () => report.hourlyData.values.first).color
-                                    : report.color)
-                                  : report.color),
-                              _buildInfoChip('📦 Item', 
-                                report.hourlyData.isNotEmpty
-                                  ? (report.hourlyData.values.firstWhere((h) => h.item.isNotEmpty, orElse: () => report.hourlyData.values.first).item.isNotEmpty 
-                                    ? report.hourlyData.values.firstWhere((h) => h.item.isNotEmpty, orElse: () => report.hourlyData.values.first).item
-                                    : report.itemType)
-                                  : report.itemType),
-                            ],
+                          _buildReportStat(
+                            'Achieve',
+                            '${report.getDailyTotal(selectedUnit: selectedUnitTab)} Pcs',
+                          ),
+                          _buildReportStat(
+                            'Balance',
+                            _calculateBalance(report, selectedUnit: selectedUnitTab) > 0 ? '${_calculateBalance(report, selectedUnit: selectedUnitTab)} Pcs' : '0 Pcs',
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    // Stats
-                    Wrap(
-                      spacing: 12,
-                      children: [
-                        _buildReportStat(
-                          'Target',
-                          '${_calculateDailyTarget(report, selectedUnit: selectedUnitTab)} Pcs',
+                      // Hourly breakdown chart or Daily Summary
+                      if (report.hourlyData.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 12),
+                          child: showDailyView
+                            ? _buildReportDailySummary(_getFilteredHourlyData(report.hourlyData, report.department), report.department)
+                                : Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Hourly Production',
+                                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  _buildHourlyBarChart(_getFilteredHourlyData(report.hourlyData, report.department), report.department),
+                                ],
+                              ),
                         ),
-                        _buildReportStat(
-                          'Achieve',
-                          '${report.getDailyTotal(selectedUnit: selectedUnitTab)} Pcs',
-                        ),
-                        _buildReportStat(
-                          'Balance',
-                          _calculateBalance(report, selectedUnit: selectedUnitTab) > 0 ? '${_calculateBalance(report, selectedUnit: selectedUnitTab)} Pcs' : '0 Pcs',
-                        ),
-                      ],
-                    ),
-                    // Hourly breakdown chart or Daily Summary
-                    if (report.hourlyData.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 12),
-                        child: showDailyView
-                          ? _buildReportDailySummary(_getFilteredHourlyData(report.hourlyData, report.department), report.department)
-                              : Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Hourly Production',
-                                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 8),
-                                _buildHourlyBarChart(_getFilteredHourlyData(report.hourlyData, report.department), report.department),
-                              ],
-                            ),
-                      ),
-                  ],
-                ),
-              );
+                    ],
+                  ),
+                );
+              }
             }).toList(),
             
           ],
@@ -5499,6 +5504,72 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
     );
   }
 
+  // Build separate cards for each line in Sewing department
+  Widget _buildSewingLineCards(ProductionReport report, bool showDailyView) {
+    if (report.hourlyData.isEmpty) return const SizedBox.shrink();
+
+    // Collect all unique lines from all hours with actual data only
+    final Map<String, LineData> lineMap = {};
+    for (final hour in report.hourlyData.values) {
+      for (final line in hour.lines) {
+        if (selectedUnitTab == -1 || line.unitNumber == selectedUnitTab) {
+          // Only include lines that have data (achieve > 0 or target > 0)
+          if (line.achieve > 0 || line.target > 0) {
+            final key = 'Unit${line.unitNumber}Line${line.lineNumber}';
+            if (!lineMap.containsKey(key)) {
+              lineMap[key] = line;
+            }
+          }
+        }
+      }
+    }
+
+    // Sort lines by unit and line number
+    final sortedLines = lineMap.values.toList();
+    sortedLines.sort((a, b) {
+      if (a.unitNumber != b.unitNumber) return a.unitNumber.compareTo(b.unitNumber);
+      return a.lineNumber.compareTo(b.lineNumber);
+    });
+
+    return Column(
+      children: sortedLines.map((line) {
+        // Get hourly data for this specific line only
+        final lineHourlyData = <int, int>{};
+        final lineTargetData = <int, int>{};
+        
+        for (final entry in report.hourlyData.entries) {
+          final hour = entry.key;
+          final update = entry.value;
+          
+          for (final l in update.lines) {
+            if (l.unitNumber == line.unitNumber && l.lineNumber == line.lineNumber) {
+              // Only include hours with actual data
+              if (l.achieve > 0 || l.target > 0) {
+                lineHourlyData[hour] = l.achieve;
+                lineTargetData[hour] = l.target;
+              }
+              break;
+            }
+          }
+        }
+
+        // Skip if no data at all
+        if (lineHourlyData.isEmpty && lineTargetData.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        // Return line card UI
+        return _buildSewingLineCardUI(
+          context: context,
+          line: line,
+          lineHourlyData: lineHourlyData,
+          lineTargetData: lineTargetData,
+          showDailyView: showDailyView,
+        );
+      }).toList(),
+    );
+  }
+
   int _calculateDailyTarget(ProductionReport report, {int selectedUnit = -1}) {
     int totalTarget = 0;
     for (var h in report.hourlyData.values) {
@@ -5518,6 +5589,309 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
     int achieve = report.getDailyTotal(selectedUnit: selectedUnit);
     return target - achieve;
   }
+
+}
+
+// ==================== SEWING LINE CARD WIDGET ====================
+
+
+
+// Standalone function to build the sewing line card
+Widget _buildSewingLineCardUI({
+  required BuildContext context,
+  required LineData line,
+  required Map<int, int> lineHourlyData,
+  required Map<int, int> lineTargetData,
+  required bool showDailyView,
+}) {
+    // Calculate totals for this line
+    int totalTarget = lineTargetData.values.fold(0, (sum, val) => sum + val);
+    int totalAchieve = lineHourlyData.values.fold(0, (sum, val) => sum + val);
+    int balance = totalTarget - totalAchieve;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Line header with toggle button
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.blue[50],
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(8),
+                topRight: Radius.circular(8),
+              ),
+            ),
+            child: Text(
+              'Line ${line.lineNumber} - Unit ${line.unitNumber}',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+                color: Colors.blue[700],
+              ),
+            ),
+          ),
+          // Info chips
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Wrap(
+              spacing: 12,
+              runSpacing: 8,
+              children: [
+                _buildLineInfoChip(context, '🏭 Buyer', line.buyerName),
+                _buildLineInfoChip(context, '🎨 Style', line.style),
+                _buildLineInfoChip(context, '🌈 Color', line.color),
+                _buildLineInfoChip(context, '📦 Item', line.item),
+              ],
+            ),
+          ),
+          // Stats row - plain text
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                Text(
+                  'Target',
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                ),
+                const SizedBox(width: 24),
+                Text(
+                  'Achieve',
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                ),
+                const SizedBox(width: 24),
+                Text(
+                  'Balance',
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Text(
+                  '$totalTarget Pcs',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                const SizedBox(width: 20),
+                Text(
+                  '$totalAchieve Pcs',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                const SizedBox(width: 20),
+                Text(
+                  '$balance Pcs',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+              ],
+            ),
+          ),
+          // Chart section (hourly or daily based on toggle)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      showDailyView ? 'Daily Production' : 'Hourly Production',
+                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                if (showDailyView)
+                  _buildLineDailyChartWidget(totalTarget, totalAchieve)
+                else
+                  _buildLineHourlyChartWidget(lineHourlyData, lineTargetData),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+      ),
+    );
+  }
+
+// Standalone helper functions for sewing line cards
+
+Widget _buildLineInfoChip(BuildContext context, String label, String value) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+    decoration: BoxDecoration(
+      color: Colors.grey[100],
+      borderRadius: BorderRadius.circular(4),
+      border: Border.all(color: Colors.grey[300]!),
+    ),
+    child: Text(
+      '$label: $value',
+      style: const TextStyle(fontSize: 11),
+      overflow: TextOverflow.ellipsis,
+      maxLines: 1,
+    ),
+  );
+}
+
+// This helper is no longer used - stats are displayed as plain text
+
+Widget _buildLineDailyChartWidget(int totalTarget, int totalAchieve) {
+  final maxValue = (totalTarget > totalAchieve ? totalTarget : totalAchieve).toDouble();
+  final max = (maxValue + (maxValue * 0.1)).toInt();
+
+  return Container(
+    height: 200,
+    padding: const EdgeInsets.all(10),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(6),
+      border: Border.all(color: Colors.grey[300]!),
+    ),
+    child: BarChart(
+      BarChartData(
+        gridData: const FlGridData(show: false),
+        titlesData: FlTitlesData(
+          topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                if (value == 0) return const Text('Daily Total', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold));
+                return const Text('');
+              },
+            ),
+          ),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 40,
+              getTitlesWidget: (value, meta) {
+                final intVal = value.toInt();
+                if (intVal == 0 || intVal == (max ~/ 2) || intVal == max) {
+                  return Text('$intVal', style: const TextStyle(fontSize: 9));
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+          ),
+        ),
+        borderData: FlBorderData(show: false),
+        barGroups: [
+          BarChartGroupData(
+            x: 0,
+            barRods: [
+              BarChartRodData(
+                toY: totalTarget.toDouble(),
+                color: Colors.orange.withOpacity(0.7),
+                width: 30,
+                borderRadius: const BorderRadius.only(topLeft: Radius.circular(4), topRight: Radius.circular(4)),
+              ),
+              BarChartRodData(
+                toY: totalAchieve.toDouble(),
+                color: Colors.green,
+                width: 30,
+                borderRadius: const BorderRadius.only(topLeft: Radius.circular(4), topRight: Radius.circular(4)),
+              ),
+            ],
+          ),
+        ],
+        maxY: max.toDouble(),
+      ),
+    ),
+  );
+}
+
+Widget _buildLineHourlyChartWidget(Map<int, int> achieveData, Map<int, int> targetData) {
+  // Always show all hours 1-9 on X-axis
+  const allHours = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  
+  if (achieveData.isEmpty && targetData.isEmpty) return const SizedBox(height: 100);
+
+  final barChartData = <BarChartGroupData>[];
+
+  // Add bars for all hours, but only with data if available
+  for (int i = 0; i < allHours.length; i++) {
+    final hour = allHours[i];
+    final achieve = achieveData[hour]?.toDouble() ?? 0.0;
+    final target = targetData[hour]?.toDouble() ?? 0.0;
+
+    barChartData.add(
+      BarChartGroupData(
+        x: i,
+        barRods: [
+          BarChartRodData(toY: target, color: Colors.orange.withOpacity(0.7), width: 6),
+          BarChartRodData(toY: achieve, color: Colors.green, width: 6),
+        ],
+      ),
+    );
+  }
+
+  double maxY = 0;
+  for (final data in barChartData) {
+    for (final rod in data.barRods) {
+      if (rod.toY > maxY) maxY = rod.toY;
+    }
+  }
+  maxY = (maxY + 10);
+
+  return Container(
+    height: 200,
+    padding: const EdgeInsets.all(10),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(6),
+      border: Border.all(color: Colors.grey[300]!),
+    ),
+    child: BarChart(
+      BarChartData(
+        gridData: const FlGridData(show: false),
+        titlesData: FlTitlesData(
+          topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                final index = value.toInt();
+                if (index < 0 || index >= allHours.length) return const Text('');
+                final hour = allHours[index];
+                return Text('${hour}h', style: const TextStyle(fontSize: 9));
+              },
+            ),
+          ),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                final intVal = value.toInt();
+                final maxInt = maxY.toInt();
+                final mid = (maxInt / 2).round();
+                if (intVal == 0 || intVal == mid || intVal == maxInt) {
+                  return Text('$intVal', style: const TextStyle(fontSize: 9));
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+          ),
+        ),
+        borderData: FlBorderData(show: false),
+        barGroups: barChartData,
+        maxY: maxY,
+      ),
+    ),
+  );
 }
 
 // ==================== DAILY REPORT DIALOG ====================
