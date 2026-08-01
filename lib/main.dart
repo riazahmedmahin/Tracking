@@ -2,38 +2,47 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 
-
 // ==================== GLOBAL USER SESSION ====================
 
 class UserSession {
   static final UserSession _instance = UserSession._internal();
-  
+
   factory UserSession() {
     return _instance;
   }
   UserSession._internal();
 
-
   String? _role;
   String? _department; // For supervisors: 'Sewing', 'Cutting', 'Finishing'
-  int _selectedUnit = -1; // For Sewing supervisors: which unit they're assigned to (-1 = all/none)
-  
+  int _selectedUnit =
+      -1; // For Sewing supervisors: which unit they're assigned to (-1 = all/none)
+  List<int> _assignedHours =
+      []; // Hours assigned to this supervisor (e.g., [1,2,3,4,5,6,7,8])
+
   String? get role => _role;
   String? get department => _department;
   int get selectedUnit => _selectedUnit;
-  
-  void setUserSession(String role, {String? department, int selectedUnit = -1}) {
+  List<int> get assignedHours => _assignedHours;
+
+  void setUserSession(
+    String role, {
+    String? department,
+    int selectedUnit = -1,
+    List<int>? assignedHours,
+  }) {
     _role = role;
     _department = department;
     _selectedUnit = selectedUnit;
+    _assignedHours = assignedHours ?? [];
   }
-  
+
   void clearSession() {
     _role = null;
     _department = null;
     _selectedUnit = -1;
+    _assignedHours = [];
   }
-  
+
   bool isSupervisorWithDepartment(String dept) {
     return _role == 'supervisor' && _department == dept;
   }
@@ -62,7 +71,7 @@ class OrderLineData {
   int qcTarget;
   int polyTarget;
   int ironTarget;
-  
+
   // Department info
   String department; // 'Cutting', 'Sewing', 'Finishing'
   int achieve; // For Sewing
@@ -96,12 +105,10 @@ class Order {
   DateTime createdDate;
   bool submittedBySupervisor;
 
-  Order({
-    required this.orderName,
-    List<OrderLineData>? lines,
-  })  : createdDate = DateTime.now(),
-        submittedBySupervisor = false,
-        lines = lines ?? [];
+  Order({required this.orderName, List<OrderLineData>? lines})
+    : createdDate = DateTime.now(),
+      submittedBySupervisor = false,
+      lines = lines ?? [];
 }
 
 class OrderManager {
@@ -130,7 +137,11 @@ class OrderManager {
     return null;
   }
 
-  void updateOrderLine(int orderIndex, int lineIndex, OrderLineData updatedLine) {
+  void updateOrderLine(
+    int orderIndex,
+    int lineIndex,
+    OrderLineData updatedLine,
+  ) {
     if (orderIndex >= 0 && orderIndex < _orders.length) {
       if (lineIndex >= 0 && lineIndex < _orders[orderIndex].lines.length) {
         _orders[orderIndex].lines[lineIndex] = updatedLine;
@@ -221,7 +232,8 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
@@ -229,7 +241,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   @override
   void initState() {
     super.initState();
-    
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
@@ -267,10 +279,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
         height: double.infinity,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Colors.blue.shade600,
-              Colors.blue.shade800,
-            ],
+            colors: [Colors.blue.shade600, Colors.blue.shade800],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -308,17 +317,24 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                           return Container(
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
-                                colors: [Colors.blue.shade400, Colors.blue.shade600],
+                                colors: [
+                                  Colors.blue.shade400,
+                                  Colors.blue.shade600,
+                                ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ),
                             ),
                             child: Center(
                               child: CircularProgressIndicator(
-                                value: loadingProgress.expectedTotalBytes != null
-                                    ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                value:
+                                    loadingProgress.expectedTotalBytes != null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
                                     : null,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white.withOpacity(0.8)),
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white.withOpacity(0.8),
+                                ),
                                 strokeWidth: 2,
                               ),
                             ),
@@ -328,13 +344,20 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                           return Container(
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
-                                colors: [Colors.blue.shade400, Colors.blue.shade600],
+                                colors: [
+                                  Colors.blue.shade400,
+                                  Colors.blue.shade600,
+                                ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ),
                             ),
                             child: const Center(
-                              child: Icon(Icons.factory, color: Colors.white, size: 70),
+                              child: Icon(
+                                Icons.factory,
+                                color: Colors.white,
+                                size: 70,
+                              ),
                             ),
                           );
                         },
@@ -388,7 +411,9 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                   width: 50,
                   height: 50,
                   child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white.withOpacity(0.8)),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Colors.white.withOpacity(0.8),
+                    ),
                     strokeWidth: 2.5,
                   ),
                 ),
@@ -414,11 +439,25 @@ class _LoginScreenState extends State<LoginScreen> {
   String _selectedRole = 'admin'; // Default role
   String? _selectedDepartment; // For supervisors
   int? _selectedUnit; // For Sewing supervisors
+  List<int> _selectedHours = []; // Hours assigned to supervisor
   bool _isLoading = false;
 
   final List<String> _roles = ['admin', 'supervisor'];
   final List<String> _departments = ['Cutting', 'Sewing', 'Finishing'];
   final List<int> _units = [1, 2];
+  final List<int> _availableHours = [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+  ]; // Available hours
 
   bool _passwordVisible = false;
 
@@ -449,10 +488,12 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     // If Sewing supervisor, unit is required
-    if (_selectedRole == 'supervisor' && _selectedDepartment == 'Sewing' && _selectedUnit == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a Unit')),
-      );
+    if (_selectedRole == 'supervisor' &&
+        _selectedDepartment == 'Sewing' &&
+        _selectedUnit == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please select a Unit')));
       return;
     }
 
@@ -471,6 +512,7 @@ class _LoginScreenState extends State<LoginScreen> {
         _selectedRole,
         department: _selectedDepartment,
         selectedUnit: _selectedUnit ?? -1,
+        assignedHours: _selectedHours,
       );
 
       // Navigate based on role
@@ -481,7 +523,6 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -509,7 +550,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     width: 100,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16),
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 12, offset: const Offset(0, 4))],
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.15),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(16),
@@ -520,15 +567,26 @@ class _LoginScreenState extends State<LoginScreen> {
                           if (loadingProgress == null) return child;
                           return Container(
                             decoration: BoxDecoration(
-                              gradient: LinearGradient(colors: [Colors.blue.shade600, Colors.blue.shade800], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.blue.shade600,
+                                  Colors.blue.shade800,
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: Center(
                               child: CircularProgressIndicator(
-                                value: loadingProgress.expectedTotalBytes != null
-                                    ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                value:
+                                    loadingProgress.expectedTotalBytes != null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
                                     : null,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white.withOpacity(0.8)),
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white.withOpacity(0.8),
+                                ),
                                 strokeWidth: 2,
                               ),
                             ),
@@ -537,11 +595,22 @@ class _LoginScreenState extends State<LoginScreen> {
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
                             decoration: BoxDecoration(
-                              gradient: LinearGradient(colors: [Colors.blue.shade600, Colors.blue.shade800], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.blue.shade600,
+                                  Colors.blue.shade800,
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: const Center(
-                              child: Icon(Icons.factory, color: Colors.white, size: 50),
+                              child: Icon(
+                                Icons.factory,
+                                color: Colors.white,
+                                size: 50,
+                              ),
                             ),
                           );
                         },
@@ -552,33 +621,66 @@ class _LoginScreenState extends State<LoginScreen> {
                   const Text(
                     'KTL Daily \nProduction Update',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: Colors.black87),
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.black87,
+                    ),
                   ),
-               
-                  Text('Welcome Back', textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: Colors.blue.shade600, fontWeight: FontWeight.w600)),
+
+                  Text(
+                    'Welcome Back',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.blue.shade600,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   const SizedBox(height: 20),
                   Container(height: 1, color: Colors.grey.shade200),
                   const SizedBox(height: 20),
-            
+
                   // Email
                   TextField(
                     controller: _emailController,
                     decoration: InputDecoration(
                       //labelText: 'Email Address',
                       hintText: 'Email',
-                      prefixIcon: Icon(Icons.email_outlined, color: Colors.blue.shade600),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300, width: 1.5)),
-                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300, width: 2)),
+                      prefixIcon: Icon(
+                        Icons.email_outlined,
+                        color: Colors.blue.shade600,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: Colors.grey.shade300,
+                          width: 1.5,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: Colors.grey.shade300,
+                          width: 2,
+                        ),
+                      ),
                       filled: true,
                       fillColor: Colors.blue.shade50,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 14,
+                      ),
                       labelStyle: const TextStyle(color: Colors.grey),
                     ),
                     keyboardType: TextInputType.emailAddress,
                   ),
                   const SizedBox(height: 14),
-            
+
                   // Password with toggle
                   TextField(
                     controller: _passwordController,
@@ -586,17 +688,45 @@ class _LoginScreenState extends State<LoginScreen> {
                     decoration: InputDecoration(
                       //labelText: 'Password',
                       hintText: 'Password',
-                      prefixIcon: Icon(Icons.lock_outline, color: Colors.blue.shade600),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300, width: 1.5)),
-                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.blue.shade600, width: 2)),
+                      prefixIcon: Icon(
+                        Icons.lock_outline,
+                        color: Colors.blue.shade600,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: Colors.grey.shade300,
+                          width: 1.5,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: Colors.blue.shade600,
+                          width: 2,
+                        ),
+                      ),
                       filled: true,
                       fillColor: Colors.blue.shade50,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 14,
+                      ),
                       labelStyle: const TextStyle(color: Colors.grey),
                       suffixIcon: IconButton(
-                        icon: Icon(_passwordVisible ? Icons.visibility : Icons.visibility_off, color: Colors.blue.shade600),
-                        onPressed: () => setState(() => _passwordVisible = !_passwordVisible),
+                        icon: Icon(
+                          _passwordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                          color: Colors.blue.shade600,
+                        ),
+                        onPressed: () => setState(
+                          () => _passwordVisible = !_passwordVisible,
+                        ),
                       ),
                     ),
                   ),
@@ -606,16 +736,51 @@ class _LoginScreenState extends State<LoginScreen> {
                     value: _selectedRole,
                     decoration: InputDecoration(
                       labelText: 'Select Role',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300, width: 1.5)),
-                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.blue.shade600, width: 2)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: Colors.grey.shade300,
+                          width: 1.5,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: Colors.blue.shade600,
+                          width: 2,
+                        ),
+                      ),
                       filled: true,
                       fillColor: Colors.blue.shade50,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                      prefixIcon: Icon(Icons.person_outline, color: Colors.blue.shade600),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.person_outline,
+                        color: Colors.blue.shade600,
+                      ),
                     ),
-                    items: _roles.map((role) => DropdownMenuItem(value: role, child: Text(role == 'admin' ? 'Admin' : 'Supervisor'))).toList(),
-                    onChanged: (v) => setState(() { _selectedRole = v ?? 'admin'; _selectedDepartment = null; _selectedUnit = null; }),
+                    items: _roles
+                        .map(
+                          (role) => DropdownMenuItem(
+                            value: role,
+                            child: Text(
+                              role == 'admin' ? 'Admin' : 'Supervisor',
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (v) => setState(() {
+                      _selectedRole = v ?? 'admin';
+                      _selectedDepartment = null;
+                      _selectedUnit = null;
+                      _selectedHours = [];
+                    }),
                   ),
                   const SizedBox(height: 12),
                   // Department (only for Supervisor)
@@ -624,40 +789,99 @@ class _LoginScreenState extends State<LoginScreen> {
                       value: _selectedDepartment,
                       decoration: InputDecoration(
                         labelText: 'Select Department *',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300, width: 1.5)),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.blue.shade600, width: 2)),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Colors.grey.shade300,
+                            width: 1.5,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Colors.blue.shade600,
+                            width: 2,
+                          ),
+                        ),
                         filled: true,
                         fillColor: Colors.blue.shade50,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                        prefixIcon: Icon(Icons.work_outline, color: Colors.blue.shade600),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
+                        prefixIcon: Icon(
+                          Icons.work_outline,
+                          color: Colors.blue.shade600,
+                        ),
                       ),
-                      items: _departments.map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
-                      onChanged: (v) => setState(() { _selectedDepartment = v; _selectedUnit = null; }),
+                      items: _departments
+                          .map(
+                            (d) => DropdownMenuItem(value: d, child: Text(d)),
+                          )
+                          .toList(),
+                      onChanged: (v) => setState(() {
+                        _selectedDepartment = v;
+                        _selectedUnit = null;
+                        _selectedHours = [];
+                      }),
                     ),
-            
+
                   // Unit (only for Sewing Supervisor)
-                  if (_selectedRole == 'supervisor' && _selectedDepartment == 'Sewing')
+                  if (_selectedRole == 'supervisor' &&
+                      _selectedDepartment == 'Sewing')
                     const SizedBox(height: 12),
-                  if (_selectedRole == 'supervisor' && _selectedDepartment == 'Sewing')
+                  if (_selectedRole == 'supervisor' &&
+                      _selectedDepartment == 'Sewing')
                     DropdownButtonFormField<int>(
                       value: _selectedUnit,
                       decoration: InputDecoration(
                         labelText: 'Select Unit *',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300, width: 1.5)),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.blue.shade600, width: 2)),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Colors.grey.shade300,
+                            width: 1.5,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Colors.blue.shade600,
+                            width: 2,
+                          ),
+                        ),
                         filled: true,
                         fillColor: Colors.blue.shade50,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                        prefixIcon: Icon(Icons.pin_outlined, color: Colors.blue.shade700),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
+                        prefixIcon: Icon(
+                          Icons.pin_outlined,
+                          color: Colors.blue.shade700,
+                        ),
                       ),
-                      items: _units.map((u) => DropdownMenuItem(value: u, child: Text('Unit $u'))).toList(),
+                      items: _units
+                          .map(
+                            (u) => DropdownMenuItem(
+                              value: u,
+                              child: Text('Unit $u'),
+                            ),
+                          )
+                          .toList(),
                       onChanged: (v) => setState(() => _selectedUnit = v),
                     ),
-            
+
                   const SizedBox(height: 20),
-            
+
                   SizedBox(
                     width: double.infinity,
                     height: 48,
@@ -665,26 +889,60 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: _isLoading ? null : _login,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue.shade600,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         elevation: 3,
                         shadowColor: Colors.blue.withOpacity(0.4),
                       ),
                       child: _isLoading
-                          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2.5, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
-                          : const Text('Login', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
+                                ),
+                              ),
+                            )
+                          : const Text(
+                              'Login',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
                   ),
-            
+
                   const SizedBox(height: 14),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: const [
-                      Text('Need access? ', style: TextStyle(color: Colors.grey, fontSize: 12)),
-                      Text('Contact Admin', style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w700, fontSize: 12)),
+                      Text(
+                        'Need access? ',
+                        style: TextStyle(color: Colors.grey, fontSize: 12),
+                      ),
+                      Text(
+                        'Contact Admin',
+                        style: TextStyle(
+                          color: Colors.blue,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 10),
-                  Text('version 1.0.0', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w400, fontSize: 12)),
+                  Text(
+                    'version 1.0.0',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.w400,
+                      fontSize: 12,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -694,8 +952,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
-
-
 
 // ==================== DATA MODELS ====================
 
@@ -725,12 +981,12 @@ class LineData {
     required this.lineNumber,
     required this.unitNumber,
     required this.target,
+    this.achieve = 0,
     this.buyerName = '',
     this.style = '',
     this.item = '',
     this.color = '',
     //this.team = '',
-    this.achieve = 0,
     this.dailyInput = 0,
     this.balance = 0,
     this.totalInput = 0,
@@ -757,7 +1013,7 @@ class HourlyUpdate {
   int polyAchieve = 0;
   int ironTarget = 0;
   int ironAchieve = 0;
-  
+
   // New finishing fields
   List<String> buyerNames = []; // Buyer names (multiple choice)
   int totalFinishingManpower = 0; // Total finishing man power
@@ -766,25 +1022,31 @@ class HourlyUpdate {
   String color = ''; // Color for finishing
   String item = ''; // Item type for finishing
 
-  HourlyUpdate({
-    required this.hour, 
-    this.notes = '',
-    String? date,
-  }) : date = date ?? DateFormat('yyyy-MM-dd').format(DateTime.now());
+  HourlyUpdate({required this.hour, this.notes = '', String? date})
+    : date = date ?? DateFormat('yyyy-MM-dd').format(DateTime.now());
 
   int getTotalInput() {
-    // For Cutting/Sewing: sum from lines
-    int lineTotal = lines.fold(0, (sum, line) => sum + line.achieve);
+    // For Cutting/Sewing: sum from lines (including both achieve and dailyInput)
+    int lineTotal = lines.fold(
+      0,
+      (sum, line) => sum + line.achieve + line.dailyInput,
+    );
     // For Finishing: sum from QC, Poly, Iron achieve values
     int finishingTotal = qcAchieve + polyAchieve + ironAchieve;
     return lineTotal + finishingTotal;
   }
 
   int getTotalBalance() {
-    // For Cutting/Sewing: sum from lines
-    int lineTotal = lines.fold(0, (sum, line) => sum + line.balance);
+    // For Cutting/Sewing: sum from lines (calculate fresh based on target and total input)
+    int lineTotal = lines.fold(
+      0,
+      (sum, line) => sum + (line.target - (line.achieve + line.dailyInput)),
+    );
     // For Finishing: sum from QC, Poly, Iron targets minus achieves
-    int finishingBalance = (qcTarget - qcAchieve) + (polyTarget - polyAchieve) + (ironTarget - ironAchieve);
+    int finishingBalance =
+        (qcTarget - qcAchieve) +
+        (polyTarget - polyAchieve) +
+        (ironTarget - ironAchieve);
     return lineTotal + finishingBalance;
   }
 }
@@ -818,8 +1080,13 @@ class PurchaseOrder {
   final String poNumber;
   final String factory;
   List<StyleItem> styles = [];
+  final String createdDate;
 
-  PurchaseOrder({required this.poNumber, required this.factory});
+  PurchaseOrder({
+    required this.poNumber,
+    required this.factory,
+    String? createdDate,
+  }) : createdDate = createdDate ?? DateTime.now().toString().split(' ')[0];
 }
 
 class ProductionReport {
@@ -831,6 +1098,8 @@ class ProductionReport {
   String itemType; // Item type
   String department; // Cutting, Sewing, Finishing
   String date;
+  String buyerName; // Buyer/Factory name
+  int unitNumber; // Unit number
   int totalInput = 0;
   int totalBalance = 0;
   int totalProduced = 0;
@@ -846,6 +1115,8 @@ class ProductionReport {
     required this.itemType,
     required this.department,
     required this.date,
+    this.buyerName = '',
+    this.unitNumber = 1,
   });
 
   int getDailyTotal({int selectedUnit = -1}) {
@@ -855,7 +1126,9 @@ class ProductionReport {
     }
     // Filter by unit only (for Sewing department)
     return hourlyData.values.fold(0, (sum, h) {
-      final unitLines = h.lines.where((line) => line.unitNumber == selectedUnit).toList();
+      final unitLines = h.lines
+          .where((line) => line.unitNumber == selectedUnit)
+          .toList();
       int lineTotal = unitLines.fold(0, (s, line) => s + line.achieve);
       return sum + lineTotal;
     });
@@ -885,7 +1158,7 @@ class TodoNote {
 class FinishingHourlyDialog extends StatefulWidget {
   final HourlyUpdate update;
   final VoidCallback onSave;
-  
+
   const FinishingHourlyDialog({
     required this.update,
     required this.onSave,
@@ -914,14 +1187,30 @@ class _FinishingHourlyDialogState extends State<FinishingHourlyDialog> {
   @override
   void initState() {
     super.initState();
-    qcTargetController = TextEditingController(text: widget.update.qcTarget.toString());
-    qcAchieveController = TextEditingController(text: widget.update.qcAchieve.toString());
-    polyTargetController = TextEditingController(text: widget.update.polyTarget.toString());
-    polyAchieveController = TextEditingController(text: widget.update.polyAchieve.toString());
-    ironTargetController = TextEditingController(text: widget.update.ironTarget.toString());
-    ironAchieveController = TextEditingController(text: widget.update.ironAchieve.toString());
-    manpowerController = TextEditingController(text: widget.update.totalFinishingManpower.toString());
-    operatorController = TextEditingController(text: widget.update.finishingOperator);
+    qcTargetController = TextEditingController(
+      text: widget.update.qcTarget.toString(),
+    );
+    qcAchieveController = TextEditingController(
+      text: widget.update.qcAchieve.toString(),
+    );
+    polyTargetController = TextEditingController(
+      text: widget.update.polyTarget.toString(),
+    );
+    polyAchieveController = TextEditingController(
+      text: widget.update.polyAchieve.toString(),
+    );
+    ironTargetController = TextEditingController(
+      text: widget.update.ironTarget.toString(),
+    );
+    ironAchieveController = TextEditingController(
+      text: widget.update.ironAchieve.toString(),
+    );
+    manpowerController = TextEditingController(
+      text: widget.update.totalFinishingManpower.toString(),
+    );
+    operatorController = TextEditingController(
+      text: widget.update.finishingOperator,
+    );
     styleController = TextEditingController(text: widget.update.style);
     colorController = TextEditingController(text: widget.update.color);
     itemController = TextEditingController(text: widget.update.item);
@@ -960,281 +1249,284 @@ class _FinishingHourlyDialogState extends State<FinishingHourlyDialog> {
             children: [
               Expanded(
                 child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Hour ${widget.update.hour == 11 ? 'Overtime' : widget.update.hour}',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                // Buyer Name (Multiple Choice with Checkboxes)
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.blue[50],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.blue[200]!),
-                  ),
+                  padding: const EdgeInsets.all(16),
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Buyer Name (Select 2-3)',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                          color: Colors.blue,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Column(
-                        children: buyerOptions.map((buyer) {
-                          return CheckboxListTile(
-                            dense: true,
-                            contentPadding: EdgeInsets.zero,
-                            value: widget.update.buyerNames.contains(buyer),
-                            onChanged: (val) {
-                              setState(() {
-                                if (val == true) {
-                                  widget.update.buyerNames.add(buyer);
-                                } else {
-                                  widget.update.buyerNames.remove(buyer);
-                                }
-                              });
-                            },
-                            title: Text(
-                              buyer,
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                            activeColor: Colors.blue,
-                          );
-                        }).toList(),
-                      ),
                       Text(
-                        'Selected: ${widget.update.buyerNames.isNotEmpty ? widget.update.buyerNames.join(", ") : "None"}',
+                        'Hour ${widget.update.hour == 11 ? 'Overtime' : widget.update.hour}',
                         style: const TextStyle(
-                          fontSize: 11,
-                          fontStyle: FontStyle.italic,
-                          color: Colors.blue,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                // QC Input
-                _buildQCField(),
-                const SizedBox(height: 16),
-                // Poly Input
-                _buildPolyField(),
-                const SizedBox(height: 16),
-                // Iron Input
-                _buildIronField(),
-                const SizedBox(height: 16),
-                // Style, Color, Item (Finishing specific)
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.purple[50],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.purple[200]!),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Style, Color, Item',
-                        style: TextStyle(
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                          color: Colors.purple,
                         ),
                       ),
-                      const SizedBox(height: 10),
-                      TextField(
-                        controller: styleController,
-                        decoration: InputDecoration(
-                          labelText: 'Style',
-                          isDense: true,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 8,
-                          ),
+                      const SizedBox(height: 16),
+                      // Buyer Name (Multiple Choice with Checkboxes)
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.blue[50],
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.blue[200]!),
                         ),
-                        style: const TextStyle(fontSize: 12),
-                        onChanged: (val) {
-                          widget.update.style = val;
-                        },
-                      ),
-                      const SizedBox(height: 10),
-                      TextField(
-                        controller: colorController,
-                        decoration: InputDecoration(
-                          labelText: 'Color',
-                          isDense: true,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 8,
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Buyer Name (Select 2-3)',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                color: Colors.blue,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Column(
+                              children: buyerOptions.map((buyer) {
+                                return CheckboxListTile(
+                                  dense: true,
+                                  contentPadding: EdgeInsets.zero,
+                                  value: widget.update.buyerNames.contains(
+                                    buyer,
+                                  ),
+                                  onChanged: (val) {
+                                    setState(() {
+                                      if (val == true) {
+                                        widget.update.buyerNames.add(buyer);
+                                      } else {
+                                        widget.update.buyerNames.remove(buyer);
+                                      }
+                                    });
+                                  },
+                                  title: Text(
+                                    buyer,
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                  activeColor: Colors.blue,
+                                );
+                              }).toList(),
+                            ),
+                            Text(
+                              'Selected: ${widget.update.buyerNames.isNotEmpty ? widget.update.buyerNames.join(", ") : "None"}',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontStyle: FontStyle.italic,
+                                color: Colors.blue,
+                              ),
+                            ),
+                          ],
                         ),
-                        style: const TextStyle(fontSize: 12),
-                        onChanged: (val) {
-                          widget.update.color = val;
-                        },
                       ),
-                      const SizedBox(height: 10),
-                      TextField(
-                        controller: itemController,
-                        decoration: InputDecoration(
-                          labelText: 'Item',
-                          isDense: true,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 8,
-                          ),
+                      const SizedBox(height: 16),
+                      // QC Input
+                      _buildQCField(),
+                      const SizedBox(height: 16),
+                      // Poly Input
+                      _buildPolyField(),
+                      const SizedBox(height: 16),
+                      // Iron Input
+                      _buildIronField(),
+                      const SizedBox(height: 16),
+                      // Style, Color, Item (Finishing specific)
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.purple[50],
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.purple[200]!),
                         ),
-                        style: const TextStyle(fontSize: 12),
-                        onChanged: (val) {
-                          widget.update.item = val;
-                        },
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Style, Color, Item',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                color: Colors.purple,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            TextField(
+                              controller: styleController,
+                              decoration: InputDecoration(
+                                labelText: 'Style',
+                                isDense: true,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 8,
+                                ),
+                              ),
+                              style: const TextStyle(fontSize: 12),
+                              onChanged: (val) {
+                                widget.update.style = val;
+                              },
+                            ),
+                            const SizedBox(height: 10),
+                            TextField(
+                              controller: colorController,
+                              decoration: InputDecoration(
+                                labelText: 'Color',
+                                isDense: true,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 8,
+                                ),
+                              ),
+                              style: const TextStyle(fontSize: 12),
+                              onChanged: (val) {
+                                widget.update.color = val;
+                              },
+                            ),
+                            const SizedBox(height: 10),
+                            TextField(
+                              controller: itemController,
+                              decoration: InputDecoration(
+                                labelText: 'Item',
+                                isDense: true,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 8,
+                                ),
+                              ),
+                              style: const TextStyle(fontSize: 12),
+                              onChanged: (val) {
+                                widget.update.item = val;
+                              },
+                            ),
+                          ],
+                        ),
                       ),
+                      const SizedBox(height: 16),
+                      // Total Finishing Manpower
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.orange[50],
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.orange[200]!),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Total Finishing Manpower',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                color: Colors.orange,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            TextField(
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                labelText: 'Number of Workers',
+                                isDense: true,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 8,
+                                ),
+                              ),
+                              style: const TextStyle(fontSize: 12),
+                              controller: manpowerController,
+                              onChanged: (val) {
+                                widget.update.totalFinishingManpower =
+                                    int.tryParse(val) ?? 0;
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      // Finishing Operator
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.purple[50],
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.purple[200]!),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Finishing Operator',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                color: Colors.purple,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            TextField(
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                labelText: 'Operator',
+                                isDense: true,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 8,
+                                ),
+                              ),
+                              style: const TextStyle(fontSize: 12),
+                              controller: operatorController,
+                              onChanged: (val) {
+                                widget.update.finishingOperator = val;
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
-                // Total Finishing Manpower
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.orange[50],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.orange[200]!),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Total Finishing Manpower',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                          color: Colors.orange,
-                        ),
+              ),
+              // Fixed buttons at bottom
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Close'),
+                      style: TextButton.styleFrom(foregroundColor: Colors.blue),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        widget.onSave();
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
                       ),
-                      const SizedBox(height: 8),
-                      TextField(
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          labelText: 'Number of Workers',
-                          isDense: true,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 8,
-                          ),
-                        ),
-                        style: const TextStyle(fontSize: 12),
-                        controller: manpowerController,
-                        onChanged: (val) {
-                          widget.update.totalFinishingManpower = int.tryParse(val) ?? 0;
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                // Finishing Operator
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.purple[50],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.purple[200]!),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Finishing Operator',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                          color: Colors.purple,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      TextField(
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          labelText: 'Operator',
-                          isDense: true,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 8,
-                          ),
-                        ),
-                        style: const TextStyle(fontSize: 12),
-                        controller: operatorController,
-                        onChanged: (val) {
-                          widget.update.finishingOperator = val;
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
+                      child: const Text('Save'),
+                    ),
                   ],
                 ),
               ),
-            ),
-            // Fixed buttons at bottom
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Close'),
-                    style: TextButton.styleFrom(foregroundColor: Colors.blue),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      widget.onSave();
-                      Navigator.pop(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
-                    ),
-                    child: const Text('Save'),
-                  ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -1467,14 +1759,14 @@ class SupervisorInputScreen extends StatefulWidget {
 
 class _SupervisorInputScreenState extends State<SupervisorInputScreen> {
   String? expandedCardKey; // format: "orderIndex_lineIndex"
-  
+
   // Store persistent TextEditingControllers per line
   final Map<String, TextEditingController> cuttingControllers = {};
   final Map<String, TextEditingController> achieveControllers = {};
   final Map<String, TextEditingController> qcControllers = {};
   final Map<String, TextEditingController> polyControllers = {};
   final Map<String, TextEditingController> ironControllers = {};
-  
+
   // Store last saved values per line to display after save
   final Map<String, Map<String, String>> savedValues = {};
 
@@ -1489,241 +1781,149 @@ class _SupervisorInputScreenState extends State<SupervisorInputScreen> {
     super.dispose();
   }
 
+  void _updateGlobalReport(
+    PurchaseOrder po,
+    StyleItem style,
+    HourlyUpdate hourly,
+    LineData line,
+  ) {
+    final department = UserSession().department ?? '';
+    final dateStr = DateFormat(
+      'dd/MMMM/yy',
+    ).format(DateFormat('yyyy-MM-dd').parse(hourly.date));
+
+    // Find if report exists for this style, department, unit, and date
+    // Note: Reports are grouped by style, department, unit and date
+    int existingIndex = globalProductionReports.indexWhere(
+      (r) =>
+          r.poNumber == po.poNumber &&
+          r.styleId == style.styleId &&
+          r.department == department &&
+          r.unitNumber == line.unitNumber &&
+          r.date == dateStr,
+    );
+
+    ProductionReport report;
+    if (existingIndex != -1) {
+      report = globalProductionReports[existingIndex];
+    } else {
+      report = ProductionReport(
+        reportId: DateTime.now().millisecondsSinceEpoch.toString(),
+        poNumber: po.poNumber,
+        styleId: style.styleId,
+        styleName: style.styleCode,
+        color: style.color,
+        itemType: style.itemType,
+        department: department,
+        date: dateStr,
+        buyerName: line.buyerName,
+        unitNumber: line.unitNumber,
+      );
+      globalProductionReports.add(report);
+    }
+
+    // Update the hourly data in the report
+    // This ensures the report object points to the same hourly update data
+    report.hourlyData[hourly.hour] = hourly;
+
+    // Recalculate totals for the report based on current hourly data
+    report.totalInput = report.getDailyTotal(selectedUnit: line.unitNumber);
+  }
+
   void _logout() {
     Navigator.of(context).pushReplacementNamed('/');
   }
 
-  void _syncToAdminData(OrderLineData updatedLine, int lineIndex) {
-    // Update the global purchase orders with supervisor's data
-    // CRITICAL: Only sync to the matching department's hourly updates
-    try {
-      final String supervisorDept = updatedLine.department.trim();
-      if (supervisorDept.isEmpty) {
-        print('Warning: supervisor line has no department set');
-        return;
-      }
-      // UNIT VALIDATION: Sewing supervisors can only sync their assigned unit
-      if (supervisorDept == 'Sewing') {
-        final supervisorUnit = UserSession().selectedUnit;
-        if (supervisorUnit > 0 && updatedLine.unitNumber > 0 && updatedLine.unitNumber != supervisorUnit) {
-          print('Security: Sewing supervisor ${supervisorUnit} tried to sync Unit ${updatedLine.unitNumber} data - BLOCKED');
-          return;
-        }
-      }
-
-      for (var po in globalPurchaseOrders) {
-        for (var style in po.styles) {
-          // ONLY access the specific department's hourly list
-          final deptList = style.departmentHourlyUpdates[supervisorDept] ?? [];
-          
-          for (var hourly in deptList) {
-            bool foundMatch = false;
-            
-            // FIRST PASS: Try exact unit+line match (HIGHEST PRIORITY)
-            if (updatedLine.unitNumber > 0 && updatedLine.lineNumber > 0) {
-              for (int i = 0; i < hourly.lines.length; i++) {
-                final line = hourly.lines[i];
-                
-                // Extra safety: ensure line belongs to the same department
-                if (line.department.trim() != supervisorDept) {
-                  continue;
-                }
-
-                // EXACT unit+line match
-                if (line.unitNumber == updatedLine.unitNumber && line.lineNumber == updatedLine.lineNumber) {
-                  // Map based on department
-                  if (supervisorDept == 'Cutting') {
-                    line.dailyInput = updatedLine.dailyInput;
-                    line.achieve = updatedLine.dailyCutting; // Cutting: use dailyCutting
-                  } else if (supervisorDept == 'Sewing') {
-                    line.achieve = updatedLine.achieve;       // Sewing: use achieve
-                    line.dailyInput = updatedLine.dailyInput;
-                  } else if (supervisorDept == 'Finishing') {
-                    line.dailyInput = updatedLine.dailyInput;
-                    line.achieve = updatedLine.achieve;
-                  }
-                  line.notes = updatedLine.supervisorNotes;
-                  foundMatch = true;
-                  break;
-                }
-              }
-            }
-            
-            // SECOND PASS: Only do fallback matching if exact match didn't work
-            if (!foundMatch) {
-              for (int i = 0; i < hourly.lines.length; i++) {
-                final line = hourly.lines[i];
-                
-                // Extra safety: ensure line belongs to the same department
-                if (line.department.trim() != supervisorDept) {
-                  continue;
-                }
-
-                // Fallback: match by buyer/style/item/color
-                final bool fallbackMatch = (line.buyerName == updatedLine.buyerName &&
-                    line.style == updatedLine.style &&
-                    (updatedLine.item.isEmpty || line.item == updatedLine.item) &&
-                    (updatedLine.color.isEmpty || line.color == updatedLine.color));
-
-                if (fallbackMatch) {
-                  // Map based on department
-                  if (supervisorDept == 'Cutting') {
-                    line.dailyInput = updatedLine.dailyInput;
-                    line.achieve = updatedLine.dailyCutting; // Cutting: use dailyCutting
-                  } else if (supervisorDept == 'Sewing') {
-                    line.achieve = updatedLine.achieve;       // Sewing: use achieve
-                    line.dailyInput = updatedLine.dailyInput;
-                  } else if (supervisorDept == 'Finishing') {
-                    line.dailyInput = updatedLine.dailyInput;
-                    line.achieve = updatedLine.achieve;
-                  }
-                  line.notes = updatedLine.supervisorNotes;
-                  foundMatch = true;
-                  break;
-                }
-              }
-            }
-            
-            if (foundMatch) break; // Stop after first hourly match
-          }
-        }
-      }
-    } catch (e) {
-      print('Sync to admin error: $e');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    // Get the supervisor's department from UserSession
     final supervisorDepartment = UserSession().department;
-    
-    // For Finishing department, show PurchaseOrders from globalPurchaseOrders
-    if (supervisorDepartment == 'Finishing') {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text('Supervisor - $supervisorDepartment'),
-          backgroundColor: Colors.orange,
-          actions: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: GestureDetector(
-                onTap: _logout,
-                child: const Icon(Icons.logout),
-              ),
-            ),
-          ],
-        ),
-        body: globalPurchaseOrders.isEmpty
-            ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.inbox,
-                      size: 80,
-                      color: Colors.orange,
-                    ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      'No Purchase Orders Available',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      'Wait for Admin to create purchase orders',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            : ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: globalPurchaseOrders.length,
-                itemBuilder: (context, poIndex) {
-                  final po = globalPurchaseOrders[poIndex];
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    child: ExpansionTile(
-                      title: Text(
-                        'PO: ${po.poNumber}',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      subtitle: Text(
-                        'Factory: ${po.factory} - ${po.styles.length} styles',
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            children: List.generate(
-                              po.styles.length,
-                              (styleIndex) {
-                                final style = po.styles[styleIndex];
-                                return _buildFinishingStyleCard(context, po, style);
-                              },
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-      );
-    }
-
-    // For other departments, use orderManager as before
-    final List<Order> orders;
-    if (supervisorDepartment != null && supervisorDepartment.isNotEmpty) {
-      orders = orderManager.getOrdersByDepartment(supervisorDepartment);
-    } else {
-      orders = orderManager.getAllOrders();
-    }
-
-    // Get supervisor's selected unit (for Sewing: should only see their unit)
     final supervisorUnit = UserSession().selectedUnit;
+    final assignedHours = UserSession().assignedHours;
 
-    // Filter orders: for Sewing supervisors, only show lines matching their unit
-    final List<Order> filteredOrders = [];
-    for (var order in orders) {
-      List<OrderLineData> filteredLines = [];
-      for (var line in order.lines) {
-        // For Sewing: only include lines with matching unit
-        if (supervisorDepartment == 'Sewing' && supervisorUnit > 0) {
-          if (line.unitNumber == supervisorUnit) {
-            filteredLines.add(line);
+    // Extract all lines from globalPurchaseOrders
+    List<Map<String, dynamic>> allLineControls = [];
+
+    for (int poIdx = 0; poIdx < globalPurchaseOrders.length; poIdx++) {
+      final po = globalPurchaseOrders[poIdx];
+
+      for (int styleIdx = 0; styleIdx < po.styles.length; styleIdx++) {
+        final style = po.styles[styleIdx];
+        final hourlyUpdates =
+            style.departmentHourlyUpdates[supervisorDepartment] ?? [];
+
+        for (int hourIdx = 0; hourIdx < hourlyUpdates.length; hourIdx++) {
+          final hourly = hourlyUpdates[hourIdx];
+
+          // Filter by assigned hours
+          if (assignedHours.isNotEmpty &&
+              !assignedHours.contains(hourly.hour)) {
+            continue;
           }
-        } else {
-          // For Cutting/Finishing: show all lines
-          filteredLines.add(line);
+
+          for (int lineIdx = 0; lineIdx < hourly.lines.length; lineIdx++) {
+            final line = hourly.lines[lineIdx];
+
+            // Filter by unit if supervisor has selected one (for Sewing)
+            if (supervisorDepartment == 'Sewing' && supervisorUnit > 0) {
+              if (line.unitNumber != supervisorUnit) continue;
+            }
+
+            allLineControls.add({
+              'po': po,
+              'poIdx': poIdx,
+              'style': style,
+              'styleIdx': styleIdx,
+              'hourly': hourly,
+              'hourIdx': hourIdx,
+              'line': line,
+              'lineIdx': lineIdx,
+            });
+          }
         }
       }
-      // Only add order if it has lines for this supervisor
-      if (filteredLines.isNotEmpty) {
-        final filteredOrder = Order(orderName: order.orderName, lines: filteredLines);
-        filteredOrder.submittedBySupervisor = order.submittedBySupervisor;
-        filteredOrders.add(filteredOrder);
-      }
     }
+
+    // Sort the list so that it is grouped by Hour first, then PO, then Style, then Unit/Line
+    allLineControls.sort((a, b) {
+      final hourA = (a['hourly'] as HourlyUpdate).hour;
+      final hourB = (b['hourly'] as HourlyUpdate).hour;
+      if (hourA != hourB) {
+        return hourA.compareTo(hourB);
+      }
+      
+      final lineA = a['line'] as LineData;
+      final lineB = b['line'] as LineData;
+      
+      if (lineA.unitNumber != lineB.unitNumber) {
+        return lineA.unitNumber.compareTo(lineB.unitNumber);
+      }
+      
+      return lineA.lineNumber.compareTo(lineB.lineNumber);
+    });
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Supervisor - $supervisorDepartment${supervisorUnit > 0 ? ' (Unit $supervisorUnit)' : ''}'),
+        title: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Supervisor - $supervisorDepartment${supervisorUnit > 0 ? ' (Unit $supervisorUnit)' : ''}',
+            ),
+            if (assignedHours.isNotEmpty)
+              Text(
+                'Hours: ${assignedHours.join(', ')}',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+          ],
+        ),
         backgroundColor: Colors.orange,
         actions: [
           Padding(
-            padding: const EdgeInsets.all(12.0),
+            padding: const EdgeInsets.all(16.0),
             child: GestureDetector(
               onTap: _logout,
               child: const Icon(Icons.logout),
@@ -1731,79 +1931,99 @@ class _SupervisorInputScreenState extends State<SupervisorInputScreen> {
           ),
         ],
       ),
-      body: filteredOrders.isEmpty
+      body: allLineControls.isEmpty
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
-                    Icons.inbox,
-                    size: 80,
-                    color: Colors.orange,
-                  ),
+                  const Icon(Icons.inbox, size: 80, color: Colors.orange),
                   const SizedBox(height: 20),
                   const Text(
                     'No Orders Available',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
                   const Text(
                     'Wait for Admin to create orders',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey),
                   ),
                 ],
               ),
             )
           : ListView.builder(
               padding: const EdgeInsets.all(12),
-              itemCount: filteredOrders.length,
-              itemBuilder: (context, filteredIndex) {
-                final order = filteredOrders[filteredIndex];
-                // Get actual order index from global manager to get correct hour number
-                final actualOrderIndex = orderManager.getAllOrders().indexOf(order);
-                final hourNumber = (actualOrderIndex + 1).toString().padLeft(2, '0');
-                
+              itemCount: allLineControls.length,
+              itemBuilder: (context, index) {
+                final control = allLineControls[index];
+                final po = control['po'] as PurchaseOrder;
+                final style = control['style'] as StyleItem;
+                final hourly = control['hourly'] as HourlyUpdate;
+                final line = control['line'] as LineData;
+                final hourIdx = control['hourIdx'] as int;
+
                 return Card(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Text(
-                          'Admin Hour $hourNumber - $supervisorDepartment',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
+                  margin: const EdgeInsets.only(bottom: 12),
+                  color: Colors.orange.shade50,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Hour ${hourly.hour} - ${po.factory}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '${line.color} | ${line.buyerName}',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (line.dailyInput > 0 || line.achieve > 0)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.green.shade100,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: const Text(
+                                  'Filled',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.green,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
-                      ),
-                      Divider(height: 1, color: Colors.grey[300]),
-                      Padding(
-                        padding: const EdgeInsets.all(10),
-                        child: Column(
-                          children: List.generate(
-                            order.lines.length,
-                            (lineIndex) {
-                              final line = order.lines[lineIndex];
-                              return _buildLineCard(
-                                context,
-                                order,
-                                line,
-                                lineIndex,
-                                actualOrderIndex,
-                              );
-                            },
-                          ),
+                        const Divider(),
+                        _buildInlineForm(
+                          context,
+                          po,
+                          style,
+                          hourly,
+                          line,
+                          hourIdx,
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 );
               },
@@ -1811,480 +2031,38 @@ class _SupervisorInputScreenState extends State<SupervisorInputScreen> {
     );
   }
 
-  Widget _buildFinishingStyleCard(BuildContext context, PurchaseOrder po, StyleItem style) {
-    return SizedBox(
-  width: double.infinity,
-  child: Card(
-    margin: const EdgeInsets.only(bottom: 12),
-    color: Colors.orange.shade50,
-    child: Padding(
-      padding: const EdgeInsets.all(8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Style: ${style.styleCode}',
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text('Color: ${style.color}', style: const TextStyle(fontSize: 12)),
-          const SizedBox(height: 8),
-          Text('Item: ${style.itemType}', style: const TextStyle(fontSize: 12)),
-          const SizedBox(height: 8),
-          Text('Buyer: ${style.buyerName}', style: const TextStyle(fontSize: 12)),
-          const SizedBox(height: 12),
-          ElevatedButton(
-            onPressed: () {
-              _showFinishingHourlyInputDialog(context, po, style);
-            },
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 122, vertical: 8),
-              backgroundColor: Colors.orange,
-            ),
-            child: const Text('Enter Hourly Data'),
-          ),
-        ],
-      ),
-    ),
-  ),
-);
-
-  }
-
-  void _showFinishingHourlyInputDialog(BuildContext context, PurchaseOrder po, StyleItem style) {
-    final allHourlyUpdates = style.departmentHourlyUpdates['Finishing'] ?? [];
-    // Filter: only show hours that have targets set by admin
-    final hourlyUpdates = allHourlyUpdates.where((h) => h.qcTarget > 0 || h.polyTarget > 0 || h.ironTarget > 0).toList();
-    
-    if (hourlyUpdates.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No hourly targets set by admin yet')),
-      );
-      return;
-    }
-    
-    int currentHourIndex = 0;
-    
-    showDialog(
-      context: context,
-      builder: (context) {
-        return Dialog(
-          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          child: StatefulBuilder(
-            builder: (context, setDialogState) {
-              final currentHourly = hourlyUpdates[currentHourIndex];
-              
-              return SizedBox(
-                width: double.infinity,
-                height: MediaQuery.of(context).size.height * 0.6,
-                child: Column(
-                  children: [
-                    // Header with progress
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Hourly Data - ${style.styleCode}',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          LinearProgressIndicator(
-                            value: (currentHourIndex + 1) / hourlyUpdates.length,
-                            minHeight: 8,
-                            backgroundColor: Colors.grey[300],
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Hour ${currentHourIndex + 1} of ${hourlyUpdates.length}',
-                            style: const TextStyle(fontSize: 12, color: Colors.grey),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Single hour card (centered)
-                    Expanded(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Center(
-                          child: _buildSupervisorFinishingHourCard(
-                            currentHourly,
-                            currentHourIndex,
-                            () => setDialogState(() {}),
-                          ),
-                        ),
-                      ),
-                    ),
-                    // Navigation buttons
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              ElevatedButton.icon(
-                                onPressed: currentHourIndex > 0
-                                    ? () => setDialogState(() => currentHourIndex--)
-                                    : null,
-                                icon: const Icon(Icons.arrow_back, size: 18),
-                                label: const Text('Previous'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue,
-                                  disabledBackgroundColor: Colors.grey[300],
-                                ),
-                              ),
-                              ElevatedButton.icon(
-                                onPressed: currentHourIndex < hourlyUpdates.length - 1
-                                    ? () => setDialogState(() => currentHourIndex++)
-                                    : null,
-                                icon: const Icon(Icons.arrow_forward, size: 18),
-                                label: const Text('Next'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue,
-                                  disabledBackgroundColor: Colors.grey[300],
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text('Cancel'),
-                              ),
-                              ElevatedButton(
-                                onPressed: () {
-                                  setState(() {});
-                                  Navigator.pop(context);
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green,
-                                ),
-                                child: const Text('Finish & Save'),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildSupervisorFinishingHourCard(HourlyUpdate hourly, int hourIndex, VoidCallback onUpdate) {
-    final qcController = TextEditingController(text: hourly.qcAchieve.toString());
-    final polyController = TextEditingController(text: hourly.polyAchieve.toString());
-    final ironController = TextEditingController(text: hourly.ironAchieve.toString());
-
-    return SizedBox(
-      width: 350,
-      child: Card(
-        elevation: 3,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                hourly.hour == 11 ? 'Overtime' : 'Hour ${hourly.hour}',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                  color: Colors.blue,
-                ),
-              ),
-              const SizedBox(height: 16),
-              // Show targets from admin
-              if (hourly.qcTarget > 0 || hourly.polyTarget > 0 || hourly.ironTarget > 0)
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.blue[50],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.blue[300]!, width: 2),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Target (from Admin):',
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('✓ QC: ${hourly.qcTarget}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-                          Text('📦 Poly: ${hourly.polyTarget}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-                          Text('🔩 Iron: ${hourly.ironTarget}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              const Text(
-                'Enter Achievements:',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: qcController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: 'QC Achieve',
-                  hintText: 'Enter achieved qty',
-                  prefixIcon: const Icon(Icons.check_circle, color: Colors.green),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                ),
-                style: const TextStyle(fontSize: 14),
-                onChanged: (val) {
-                  hourly.qcAchieve = int.tryParse(val) ?? 0;
-                  onUpdate();
-                },
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: polyController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: 'Poly Achieve',
-                  hintText: 'Enter achieved qty',
-                  prefixIcon: const Icon(Icons.check_circle, color: Colors.blue),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                ),
-                style: const TextStyle(fontSize: 14),
-                onChanged: (val) {
-                  hourly.polyAchieve = int.tryParse(val) ?? 0;
-                  onUpdate();
-                },
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: ironController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: 'Iron Achieve',
-                  hintText: 'Enter achieved qty',
-                  prefixIcon: const Icon(Icons.check_circle, color: Colors.purple),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                ),
-                style: const TextStyle(fontSize: 14),
-                onChanged: (val) {
-                  hourly.ironAchieve = int.tryParse(val) ?? 0;
-                  onUpdate();
-                },
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.green[50],
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.green[300]!),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Total Achieved:',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      '${hourly.qcAchieve + hourly.polyAchieve + hourly.ironAchieve}',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLineCard(
-    BuildContext context,
-    Order order,
-    OrderLineData line,
-    int lineIndex,
-    int orderIndex,
-  ) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      color: Colors.orange.shade50,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header with Line Number, Status
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Line ${lineIndex + 1} ',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${line.color} | ${line.buyerName}',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    if (line.dailyCutting > 0 || line.dailyInput > 0 || line.achieve > 0)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.green.shade100,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: const Text(
-                          'Filled',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.green,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ],
-            ),
-            
-            // Form section - always visible
-            const Divider(),
-            _buildInlineForm(context, order, line, lineIndex, orderIndex),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Sync finishing QC/Poly/Iron back into admin HourlyUpdates
-  void _syncFinishingToAdmin(OrderLineData lineData, int qc, int poly, int iron) {
-    try {
-      for (var po in globalPurchaseOrders) {
-        for (var style in po.styles) {
-          for (var deptList in style.departmentHourlyUpdates.values) {
-            for (var hourly in deptList) {
-              final match = hourly.lines.any((l) => l.buyerName == lineData.buyerName && l.style == lineData.style);
-              if (match) {
-                hourly.qcAchieve = (hourly.qcAchieve) + qc;
-                hourly.polyAchieve = (hourly.polyAchieve) + poly;
-                hourly.ironAchieve = (hourly.ironAchieve) + iron;
-              }
-            }
-          }
-        }
-      }
-    } catch (e) {
-      print('Finishing-to-admin sync error: $e');
-    }
-  }
-
-  // Inline form widget - renders directly on page without popup
   Widget _buildInlineForm(
     BuildContext context,
-    Order order,
-    OrderLineData line,
-    int lineIndex,
-    int orderIndex,
+    PurchaseOrder po,
+    StyleItem style,
+    HourlyUpdate hourly,
+    LineData line,
+    int hourIdx,
   ) {
-    String lineKey = '${orderIndex}_$lineIndex';
-    
-    // Get or create persistent controllers for this line
-    if (!cuttingControllers.containsKey(lineKey)) {
-      cuttingControllers[lineKey] = TextEditingController(
-        text: savedValues[lineKey]?['cutting'] ?? 
-            (line.dailyCutting == 0 ? '' : line.dailyCutting.toString()),
-      );
-    }
+    String lineKey =
+        '${po.poNumber}_${style.styleId}_${line.buyerName}_${hourIdx}_${line.lineNumber}';
+
     if (!achieveControllers.containsKey(lineKey)) {
       achieveControllers[lineKey] = TextEditingController(
-        text: savedValues[lineKey]?['achieve'] ?? 
-            (line.achieve == 0 ? '' : line.achieve.toString()),
-      );
-    }
-    if (!qcControllers.containsKey(lineKey)) {
-      qcControllers[lineKey] = TextEditingController(
-        text: savedValues[lineKey]?['qc'] ?? '',
-      );
-    }
-    if (!polyControllers.containsKey(lineKey)) {
-      polyControllers[lineKey] = TextEditingController(
-        text: savedValues[lineKey]?['poly'] ?? '',
-      );
-    }
-    if (!ironControllers.containsKey(lineKey)) {
-      ironControllers[lineKey] = TextEditingController(
-        text: savedValues[lineKey]?['iron'] ?? '',
+        text:
+            (UserSession().department == 'Cutting' ||
+                        UserSession().department == 'Sewing'
+                    ? line.achieve
+                    : line.dailyInput)
+                .toString(),
       );
     }
 
-    final cuttingController = cuttingControllers[lineKey]!;
-    final achieveController = achieveControllers[lineKey]!;
-    final qcController = qcControllers[lineKey]!;
-    final polyController = polyControllers[lineKey]!;
-    final ironController = ironControllers[lineKey]!;
+    final controller = achieveControllers[lineKey]!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 12),
-        
-        // Read-only field: Buyer Name
-        const Text('Buyer Name', style: TextStyle(fontSize: 12, color: Colors.grey)),
+        const Text(
+          'Buyer Name',
+          style: TextStyle(fontSize: 12, color: Colors.grey),
+        ),
         const SizedBox(height: 4),
         Container(
           width: double.infinity,
@@ -2294,11 +2072,12 @@ class _SupervisorInputScreenState extends State<SupervisorInputScreen> {
             borderRadius: BorderRadius.circular(6),
             color: Colors.grey.shade100,
           ),
-          child: Text(line.buyerName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+          child: Text(
+            line.buyerName,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          ),
         ),
         const SizedBox(height: 12),
-        
-        // Read-only field: Style
         const Text('Style', style: TextStyle(fontSize: 12, color: Colors.grey)),
         const SizedBox(height: 4),
         Container(
@@ -2309,11 +2088,12 @@ class _SupervisorInputScreenState extends State<SupervisorInputScreen> {
             borderRadius: BorderRadius.circular(6),
             color: Colors.grey.shade100,
           ),
-          child: Text(line.style, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+          child: Text(
+            style.styleCode,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          ),
         ),
         const SizedBox(height: 12),
-        
-        // Read-only field: Color
         const Text('Color', style: TextStyle(fontSize: 12, color: Colors.grey)),
         const SizedBox(height: 4),
         Container(
@@ -2324,12 +2104,16 @@ class _SupervisorInputScreenState extends State<SupervisorInputScreen> {
             borderRadius: BorderRadius.circular(6),
             color: Colors.grey.shade100,
           ),
-          child: Text(line.color, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+          child: Text(
+            line.color,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          ),
         ),
         const SizedBox(height: 12),
-        
-        // Read-only field: Target
-        const Text('Target', style: TextStyle(fontSize: 12, color: Colors.grey)),
+        const Text(
+          'Target',
+          style: TextStyle(fontSize: 12, color: Colors.grey),
+        ),
         const SizedBox(height: 4),
         Container(
           width: double.infinity,
@@ -2339,163 +2123,90 @@ class _SupervisorInputScreenState extends State<SupervisorInputScreen> {
             borderRadius: BorderRadius.circular(6),
             color: Colors.grey.shade100,
           ),
-          child: Text(line.target.toString(), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+          child: Text(
+            line.target.toString(),
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          ),
         ),
         const SizedBox(height: 16),
-        
-        // Department-specific input fields
-        if (line.department == 'Cutting') ...[
-          const Text('Daily Cutting', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold)),
+        if (UserSession().department == 'Cutting') ...[
+          const Text(
+            'Daily Cutting',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 8),
           TextField(
-            controller: cuttingController,
+            controller: controller,
             decoration: InputDecoration(
               hintText: 'Enter quantity',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(6),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
             ),
             keyboardType: TextInputType.number,
           ),
-        ] else if (line.department == 'Sewing') ...[
-          const Text('Achieve', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold)),
+        ] else if (UserSession().department == 'Sewing') ...[
+          const Text(
+            'Achieve',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 8),
           TextField(
-            controller: achieveController,
+            controller: controller,
             decoration: InputDecoration(
               hintText: 'Enter quantity',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            ),
-            keyboardType: TextInputType.number,
-          ),
-        ] else if (line.department == 'Finishing') ...[
-          const Text('QC Achieve', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          TextField(
-            controller: qcController,
-            decoration: InputDecoration(
-              hintText: 'Enter QC quantity',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            ),
-            keyboardType: TextInputType.number,
-          ),
-          const SizedBox(height: 12),
-          const Text('Poly Achieve', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          TextField(
-            controller: polyController,
-            decoration: InputDecoration(
-              hintText: 'Enter Poly quantity',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            ),
-            keyboardType: TextInputType.number,
-          ),
-          const SizedBox(height: 12),
-          const Text('Iron Achieve', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          TextField(
-            controller: ironController,
-            decoration: InputDecoration(
-              hintText: 'Enter Iron quantity',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(6),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
             ),
             keyboardType: TextInputType.number,
           ),
         ],
-        
         const SizedBox(height: 18),
-        
-        // Save button (full width green)
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
             onPressed: () {
-              // Get values from controllers before updating
-              String cuttingValue = cuttingController.text;
-              String achieveValue = achieveController.text;
-              String qcValue = qcController.text;
-              String polyValue = polyController.text;
-              String ironValue = ironController.text;
+              final value = int.tryParse(controller.text) ?? 0;
 
-              // Create updated line with new values
-              final updatedLine = OrderLineData(
-                buyerName: line.buyerName,
-                style: line.style,
-                item: line.item,
-                color: line.color,
-                target: line.target,
-                operator: line.operator,
-                shortOperator: line.shortOperator,
-                bartechOperator: line.bartechOperator,
-                bartechHelper: line.bartechHelper,
-                unitNumber: line.unitNumber,
-                lineNumber: line.lineNumber,
-                department: line.department,
-                dailyCutting: (line.department == 'Cutting')
-                    ? (int.tryParse(cuttingValue) ?? 0)
-                    : line.dailyCutting,
-                achieve: (line.department == 'Sewing')
-                    ? (int.tryParse(achieveValue) ?? 0)
-                    : line.achieve,
-                dailyInput: line.dailyInput,
-                supervisorNotes: line.supervisorNotes,
-                qcTarget: line.qcTarget,
-                polyTarget: line.polyTarget,
-                ironTarget: line.ironTarget,
-              );
+              setState(() {
+                if (UserSession().department == 'Cutting' ||
+                    UserSession().department == 'Sewing') {
+                  line.achieve = value;
+                } else {
+                  line.dailyInput = value;
+                }
 
-              // Sync to admin data
-              if (line.department == 'Finishing') {
-                final qc = int.tryParse(qcValue) ?? 0;
-                final poly = int.tryParse(polyValue) ?? 0;
-                final iron = int.tryParse(ironValue) ?? 0;
-                _syncFinishingToAdmin(line, qc, poly, iron);
-              }
-
-              final orderIndex = orderManager.getAllOrders().indexOf(order);
-              orderManager.updateOrderLine(orderIndex, lineIndex, updatedLine);
-              _syncToAdminData(updatedLine, lineIndex);
-
-              // Store values in persistent map AFTER saving
-              if (!savedValues.containsKey(lineKey)) {
-                savedValues[lineKey] = {};
-              }
-              savedValues[lineKey]!['cutting'] = cuttingValue;
-              savedValues[lineKey]!['achieve'] = achieveValue;
-              savedValues[lineKey]!['qc'] = qcValue;
-              savedValues[lineKey]!['poly'] = polyValue;
-              savedValues[lineKey]!['iron'] = ironValue;
-
-              // Don't clear controllers - keep them with their current values
-              // Update state to refresh UI
-              setState(() {});
+                // Sync this input to the global reports list so Admin can see it immediately
+                _updateGlobalReport(po, style, hourly, line);
+              });
 
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('Data saved successfully'),
-                  backgroundColor: Colors.green,
-                  duration: Duration(seconds: 2),
+                  content: Text(
+                    'Data saved successfully! Output synced to Admin reports.',
+                  ),
                 ),
               );
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
-              ),
-            ),
-            child: const Text(
-              'Save',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+            child: const Text('Save'),
           ),
         ),
       ],
@@ -2503,7 +2214,7 @@ class _SupervisorInputScreenState extends State<SupervisorInputScreen> {
   }
 }
 
-// ==================== SUPERVISOR DATA INPUT PAGE ====================
+// ==================== DATA STRUCTURES ====================
 
 // ==================== MAIN APP ====================
 
@@ -2533,7 +2244,7 @@ class _ProductionTrackerAppState extends State<ProductionTrackerApp> {
     // Use global storage so data persists across login/logout
     purchaseOrders = globalPurchaseOrders;
     productionReports = globalProductionReports;
-    
+
     // Create default order in OrderManager for Admin-Supervisor data sync
     if (orderManager.getAllOrders().isEmpty) {
       final defaultOrder = Order(orderName: 'Production Order');
@@ -2555,33 +2266,33 @@ class _ProductionTrackerAppState extends State<ProductionTrackerApp> {
       ),
       drawer: _buildDrawer(),
       body: Column(
-              children: [
-                Expanded(
-                  child: selectedTabIndex == 0
-                      ? OrdersListView(
-                          purchaseOrders: purchaseOrders,
-                          onStyleSelected: _showStyleDetails,
-                          onAddPO: _showAddPODialog,
-                        )
-                      : selectedTabIndex == 1
-                      ? ProductionTrackingView(
-                          purchaseOrders: purchaseOrders,
-                          onReportAdded: (report) {
-                            setState(() => productionReports.add(report));
-                          },
-                        )
-                      : selectedTabIndex == 2
-                      ? DailyReportsView(reports: productionReports)
-                      : _buildNotesView(),
-                ),
-              ],
-            ),
+        children: [
+          Expanded(
+            child: selectedTabIndex == 0
+                ? OrdersListView(
+                    purchaseOrders: purchaseOrders,
+                    onStyleSelected: _showStyleDetails,
+                    onAddPO: _showAddPODialog,
+                  )
+                : selectedTabIndex == 1
+                ? ProductionTrackingView(
+                    purchaseOrders: purchaseOrders,
+                    onReportAdded: (report) {
+                      setState(() => productionReports.add(report));
+                    },
+                  )
+                : selectedTabIndex == 2
+                ? DailyReportsView(reports: productionReports)
+                : _buildNotesView(),
+          ),
+        ],
+      ),
       bottomNavigationBar: _buildBottomNavBar(),
       floatingActionButton: selectedTabIndex == 3
           ? FloatingActionButton(
               onPressed: _showAddNoteDialog,
               backgroundColor: Colors.blue,
-              child: const Icon(Icons.note_add,color: Colors.white,),
+              child: const Icon(Icons.note_add, color: Colors.white),
             )
           : null,
     );
@@ -2646,9 +2357,7 @@ class _ProductionTrackerAppState extends State<ProductionTrackerApp> {
         padding: EdgeInsets.zero,
         children: [
           DrawerHeader(
-            decoration: BoxDecoration(
-              color: Colors.blue,
-            ),
+            decoration: BoxDecoration(color: Colors.blue),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.end,
@@ -2669,10 +2378,7 @@ class _ProductionTrackerAppState extends State<ProductionTrackerApp> {
                 ),
                 Text(
                   'admin@ktl.com',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(color: Colors.white70, fontSize: 12),
                 ),
               ],
             ),
@@ -2720,10 +2426,7 @@ class _ProductionTrackerAppState extends State<ProductionTrackerApp> {
                       const SizedBox(height: 16),
                       Text(
                         'No notes yet',
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.grey[600],
-                        ),
+                        style: TextStyle(fontSize: 18, color: Colors.grey[600]),
                       ),
                     ],
                   ),
@@ -2777,9 +2480,16 @@ class _ProductionTrackerAppState extends State<ProductionTrackerApp> {
                             PopupMenuItem(
                               child: const Row(
                                 children: [
-                                  Icon(Icons.delete, size: 18, color: Colors.red),
+                                  Icon(
+                                    Icons.delete,
+                                    size: 18,
+                                    color: Colors.red,
+                                  ),
                                   SizedBox(width: 8),
-                                  Text('Delete', style: TextStyle(color: Colors.red)),
+                                  Text(
+                                    'Delete',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
                                 ],
                               ),
                               onTap: () => _deleteNote(index),
@@ -2827,10 +2537,7 @@ class _ProductionTrackerAppState extends State<ProductionTrackerApp> {
               const SizedBox(height: 20),
               const Text(
                 'Add New Note',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 24),
               TextField(
@@ -2875,19 +2582,25 @@ class _ProductionTrackerAppState extends State<ProductionTrackerApp> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        if (titleController.text.isNotEmpty && contentController.text.isNotEmpty) {
+                        if (titleController.text.isNotEmpty &&
+                            contentController.text.isNotEmpty) {
                           setState(() {
-                            todoNotes.add(TodoNote(
-                              id: DateTime.now().millisecondsSinceEpoch.toString(),
-                              title: titleController.text,
-                              content: contentController.text,
-                              createdDate: DateTime.now(),
-                              lastModified: DateTime.now(),
-                            ));
+                            todoNotes.add(
+                              TodoNote(
+                                id: DateTime.now().millisecondsSinceEpoch
+                                    .toString(),
+                                title: titleController.text,
+                                content: contentController.text,
+                                createdDate: DateTime.now(),
+                                lastModified: DateTime.now(),
+                              ),
+                            );
                           });
                           Navigator.pop(context);
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Note added successfully!')),
+                            const SnackBar(
+                              content: Text('Note added successfully!'),
+                            ),
                           );
                         }
                       },
@@ -2911,7 +2624,9 @@ class _ProductionTrackerAppState extends State<ProductionTrackerApp> {
 
   void _showEditNoteDialog(int index) {
     final titleController = TextEditingController(text: todoNotes[index].title);
-    final contentController = TextEditingController(text: todoNotes[index].content);
+    final contentController = TextEditingController(
+      text: todoNotes[index].content,
+    );
 
     showModalBottomSheet(
       context: context,
@@ -2941,10 +2656,7 @@ class _ProductionTrackerAppState extends State<ProductionTrackerApp> {
               const SizedBox(height: 20),
               const Text(
                 'Edit Note',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 24),
               TextField(
@@ -2989,7 +2701,8 @@ class _ProductionTrackerAppState extends State<ProductionTrackerApp> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        if (titleController.text.isNotEmpty && contentController.text.isNotEmpty) {
+                        if (titleController.text.isNotEmpty &&
+                            contentController.text.isNotEmpty) {
                           setState(() {
                             todoNotes[index].title = titleController.text;
                             todoNotes[index].content = contentController.text;
@@ -2997,7 +2710,9 @@ class _ProductionTrackerAppState extends State<ProductionTrackerApp> {
                           });
                           Navigator.pop(context);
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Note updated successfully!')),
+                            const SnackBar(
+                              content: Text('Note updated successfully!'),
+                            ),
                           );
                         }
                       },
@@ -3046,9 +2761,7 @@ class _ProductionTrackerAppState extends State<ProductionTrackerApp> {
   void _showProfileDialog() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const UserProfileScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const UserProfileScreen()),
     );
   }
 
@@ -3063,18 +2776,12 @@ class _ProductionTrackerAppState extends State<ProductionTrackerApp> {
             ListTile(
               leading: const Icon(Icons.brightness_6),
               title: const Text('Dark Mode'),
-              trailing: Switch(
-                value: false,
-                onChanged: (value) {},
-              ),
+              trailing: Switch(value: false, onChanged: (value) {}),
             ),
             ListTile(
               leading: const Icon(Icons.notifications),
               title: const Text('Notifications'),
-              trailing: Switch(
-                value: true,
-                onChanged: (value) {},
-              ),
+              trailing: Switch(value: true, onChanged: (value) {}),
             ),
             ListTile(
               leading: const Icon(Icons.language),
@@ -3111,8 +2818,14 @@ class _ProductionTrackerAppState extends State<ProductionTrackerApp> {
 
   void _upsertReportFor(PurchaseOrder po, StyleItem style, String department) {
     final hourlyUpdates = style.departmentHourlyUpdates[department] ?? [];
-    final totalInput = hourlyUpdates.fold(0, (sum, h) => sum + h.getTotalInput());
-    final totalBalance = hourlyUpdates.fold(0, (sum, h) => sum + h.getTotalBalance());
+    final totalInput = hourlyUpdates.fold(
+      0,
+      (sum, h) => sum + h.getTotalInput(),
+    );
+    final totalBalance = hourlyUpdates.fold(
+      0,
+      (sum, h) => sum + h.getTotalBalance(),
+    );
 
     final report = ProductionReport(
       reportId: '${po.poNumber}-${style.styleId}-$department',
@@ -3123,6 +2836,8 @@ class _ProductionTrackerAppState extends State<ProductionTrackerApp> {
       itemType: style.itemType,
       department: department,
       date: DateFormat('dd/MMMM/yy').format(DateTime.now()),
+      buyerName: po.factory,
+      unitNumber: 1,
     );
 
     for (var h in hourlyUpdates) {
@@ -3132,7 +2847,12 @@ class _ProductionTrackerAppState extends State<ProductionTrackerApp> {
     report.totalBalance = totalBalance;
 
     // Upsert into productionReports
-    final existingIndex = productionReports.indexWhere((r) => r.poNumber == po.poNumber && r.styleId == style.styleId && r.department == department);
+    final existingIndex = productionReports.indexWhere(
+      (r) =>
+          r.poNumber == po.poNumber &&
+          r.styleId == style.styleId &&
+          r.department == department,
+    );
     setState(() {
       if (existingIndex >= 0) {
         productionReports[existingIndex] = report;
@@ -3174,10 +2894,10 @@ class _ProductionTrackerAppState extends State<ProductionTrackerApp> {
               onPressed: () {
                 final factoryName = factoryController.text.trim();
                 if (factoryName.isEmpty) return;
-                
+
                 final poNum = DateTime.now().millisecondsSinceEpoch.toString();
                 final po = PurchaseOrder(poNumber: poNum, factory: factoryName);
-                
+
                 // Create automatic style/card with factory name
                 final style = StyleItem(
                   styleId: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -3185,9 +2905,10 @@ class _ProductionTrackerAppState extends State<ProductionTrackerApp> {
                   color: '',
                   itemType: '',
                   totalQuantity: 0,
+                  buyerName: factoryName,
                 );
                 po.styles.add(style);
-                
+
                 setState(() {
                   purchaseOrders.add(po);
                 });
@@ -3227,7 +2948,12 @@ class _OrdersListViewState extends State<OrdersListView> {
       children: [
         // MAIN CONTENT
         SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 90), // bottom space for FAB
+          padding: const EdgeInsets.fromLTRB(
+            16,
+            16,
+            16,
+            90,
+          ), // bottom space for FAB
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -3262,7 +2988,7 @@ class _OrdersListViewState extends State<OrdersListView> {
           child: FloatingActionButton(
             onPressed: widget.onAddPO,
             backgroundColor: Colors.blue,
-            child: const Icon(Icons.add,color: Colors.white,),
+            child: const Icon(Icons.add, color: Colors.white),
           ),
         ),
       ],
@@ -3318,10 +3044,7 @@ class _OrdersListViewState extends State<OrdersListView> {
         children: [
           Text(
             po.factory,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 12,
-            ),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
           ),
           ElevatedButton.icon(
             onPressed: () => widget.onStyleSelected(style, po),
@@ -3345,7 +3068,12 @@ class StyleDetailsSheet extends StatelessWidget {
   final PurchaseOrder po;
   final void Function(PurchaseOrder, StyleItem, String)? onHourlySave;
 
-  const StyleDetailsSheet({super.key, required this.style, required this.po, this.onHourlySave});
+  const StyleDetailsSheet({
+    super.key,
+    required this.style,
+    required this.po,
+    this.onHourlySave,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -3362,10 +3090,10 @@ class StyleDetailsSheet extends StatelessWidget {
             onPressed: () => Navigator.pop(context),
           ),
           bottom: const TabBar(
-            labelColor: Colors.white,            // selected tab text color
-            unselectedLabelColor: Colors.white, 
+            labelColor: Colors.white, // selected tab text color
+            unselectedLabelColor: Colors.white,
             tabs: [
-              Tab(text: '✂️ Cutting',),
+              Tab(text: '✂️ Cutting'),
               Tab(text: '🧵 Sewing'),
               Tab(text: '🔨 Finishing'),
             ],
@@ -3376,8 +3104,18 @@ class StyleDetailsSheet extends StatelessWidget {
             Expanded(
               child: TabBarView(
                 children: [
-                  DepartmentTrackingView(style: style, po: po, department: 'Cutting', onHourlySave: onHourlySave),
-                  DepartmentTrackingView(style: style, po: po, department: 'Sewing', onHourlySave: onHourlySave),
+                  DepartmentTrackingView(
+                    style: style,
+                    po: po,
+                    department: 'Cutting',
+                    onHourlySave: onHourlySave,
+                  ),
+                  DepartmentTrackingView(
+                    style: style,
+                    po: po,
+                    department: 'Sewing',
+                    onHourlySave: onHourlySave,
+                  ),
                   DepartmentTrackingView(
                     style: style,
                     po: po,
@@ -3422,26 +3160,36 @@ class _DepartmentTrackingViewState extends State<DepartmentTrackingView> {
     super.initState();
     hourlyUpdates =
         widget.style.departmentHourlyUpdates[widget.department] ?? [];
-    
+
     String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    
+
     if (hourlyUpdates.isEmpty) {
       // Create new hourly updates for today
       int totalHours = widget.department == 'Sewing'
           ? 9
           : widget.department == 'Finishing'
-              ? 11
-              : 8;
+          ? 11
+          : 8;
       for (int i = 1; i <= totalHours; i++) {
         final hourUpdate = HourlyUpdate(hour: i, date: today);
         // Add Unit 1 Line 1 initially
         hourUpdate.lines.add(
-          LineData(lineNumber: 1, unitNumber: 1, target: 0, department: widget.department),
+          LineData(
+            lineNumber: 1,
+            unitNumber: 1,
+            target: 0,
+            department: widget.department,
+          ),
         );
         // For Sewing, also add Unit 2 Line 1 for all hours
         if (widget.department == 'Sewing') {
           hourUpdate.lines.add(
-            LineData(lineNumber: 1, unitNumber: 2, target: 0, department: widget.department),
+            LineData(
+              lineNumber: 1,
+              unitNumber: 2,
+              target: 0,
+              department: widget.department,
+            ),
           );
         }
         hourlyUpdates.add(hourUpdate);
@@ -3455,19 +3203,29 @@ class _DepartmentTrackingViewState extends State<DepartmentTrackingView> {
         int totalHours = widget.department == 'Sewing'
             ? 9
             : widget.department == 'Finishing'
-                ? 11
-                : 8;
+            ? 11
+            : 8;
         hourlyUpdates.clear();
         for (int i = 1; i <= totalHours; i++) {
           final hourUpdate = HourlyUpdate(hour: i, date: today);
           // Add Unit 1 Line 1 initially
           hourUpdate.lines.add(
-            LineData(lineNumber: 1, unitNumber: 1, target: 0, department: widget.department),
+            LineData(
+              lineNumber: 1,
+              unitNumber: 1,
+              target: 0,
+              department: widget.department,
+            ),
           );
           // For Sewing, also add Unit 2 Line 1 for all hours
           if (widget.department == 'Sewing') {
             hourUpdate.lines.add(
-              LineData(lineNumber: 1, unitNumber: 2, target: 0, department: widget.department),
+              LineData(
+                lineNumber: 1,
+                unitNumber: 2,
+                target: 0,
+                department: widget.department,
+              ),
             );
           }
           hourlyUpdates.add(hourUpdate);
@@ -3505,9 +3263,9 @@ class _DepartmentTrackingViewState extends State<DepartmentTrackingView> {
                         style: TextStyle(fontWeight: FontWeight.w600),
                       ),
                       Text(
-                        hourlyUpdates.isNotEmpty 
-                          ? hourlyUpdates.first.date
-                          : DateFormat('yyyy-MM-dd').format(DateTime.now()),
+                        hourlyUpdates.isNotEmpty
+                            ? hourlyUpdates.first.date
+                            : DateFormat('yyyy-MM-dd').format(DateTime.now()),
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Colors.blue,
@@ -3575,31 +3333,30 @@ class _DepartmentTrackingViewState extends State<DepartmentTrackingView> {
     );
   }
 
-Widget _buildSummaryRow(String label, String value, Color color) {
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-    //margin: const EdgeInsets.symmetric(vertical: 0),
-    decoration: BoxDecoration(
-      color: Colors.grey.shade100, // চাইলে remove করতে পারো
-      borderRadius: BorderRadius.circular(2), // 👈 kona গোল
-    ),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label),
-        Text(
-          value,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: color,
-            fontSize: 14,
+  Widget _buildSummaryRow(String label, String value, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+      //margin: const EdgeInsets.symmetric(vertical: 0),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100, // চাইলে remove করতে পারো
+        borderRadius: BorderRadius.circular(2), // 👈 kona গোল
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label),
+          Text(
+            value,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: color,
+              fontSize: 14,
+            ),
           ),
-        ),
-      ],
-    ),
-  );
-}
-
+        ],
+      ),
+    );
+  }
 
   Widget _buildHourCard(int index, HourlyUpdate update) {
     return Card(
@@ -3678,9 +3435,7 @@ Widget _buildSummaryRow(String label, String value, Color color) {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  update.hour == 11
-                      ? 'Overtime'
-                      : 'Hour ${update.hour}',
+                  update.hour == 11 ? 'Overtime' : 'Hour ${update.hour}',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
@@ -3706,7 +3461,10 @@ Widget _buildSummaryRow(String label, String value, Color color) {
                     Expanded(
                       child: Text(
                         'Buyers: ${update.buyerNames.join(", ")}',
-                        style: const TextStyle(fontSize: 11, color: Colors.blue),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.blue,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -3715,7 +3473,8 @@ Widget _buildSummaryRow(String label, String value, Color color) {
               ),
             if (update.buyerNames.isNotEmpty) const SizedBox(height: 8),
             // Finishing Operator and Manpower display
-            if (update.finishingOperator.isNotEmpty || update.totalFinishingManpower > 0)
+            if (update.finishingOperator.isNotEmpty ||
+                update.totalFinishingManpower > 0)
               Row(
                 children: [
                   if (update.finishingOperator.isNotEmpty)
@@ -3732,7 +3491,10 @@ Widget _buildSummaryRow(String label, String value, Color color) {
                           children: [
                             const Text(
                               'Operator',
-                              style: TextStyle(fontSize: 9, color: Colors.purple),
+                              style: TextStyle(
+                                fontSize: 9,
+                                color: Colors.purple,
+                              ),
                             ),
                             Text(
                               update.finishingOperator,
@@ -3747,7 +3509,8 @@ Widget _buildSummaryRow(String label, String value, Color color) {
                         ),
                       ),
                     ),
-                  if (update.finishingOperator.isNotEmpty && update.totalFinishingManpower > 0)
+                  if (update.finishingOperator.isNotEmpty &&
+                      update.totalFinishingManpower > 0)
                     const SizedBox(width: 8),
                   if (update.totalFinishingManpower > 0)
                     Expanded(
@@ -3763,7 +3526,10 @@ Widget _buildSummaryRow(String label, String value, Color color) {
                           children: [
                             const Text(
                               'Manpower',
-                              style: TextStyle(fontSize: 9, color: Colors.orange),
+                              style: TextStyle(
+                                fontSize: 9,
+                                color: Colors.orange,
+                              ),
                             ),
                             Text(
                               '${update.totalFinishingManpower} Workers',
@@ -3779,7 +3545,8 @@ Widget _buildSummaryRow(String label, String value, Color color) {
                     ),
                 ],
               ),
-            if (update.finishingOperator.isNotEmpty || update.totalFinishingManpower > 0)
+            if (update.finishingOperator.isNotEmpty ||
+                update.totalFinishingManpower > 0)
               const SizedBox(height: 8),
             // Summary display
             Container(
@@ -3873,7 +3640,6 @@ Widget _buildSummaryRow(String label, String value, Color color) {
           const SizedBox(height: 8),
           // Buyer, Style, Item
           Row(
-            
             children: [
               if (line.buyerName.isNotEmpty)
                 Expanded(
@@ -3986,7 +3752,7 @@ Widget _buildSummaryRow(String label, String value, Color color) {
                       style: const TextStyle(
                         fontSize: 10,
                         //color: Colors.orange,
-                       // fontWeight: FontWeight.bold,
+                        // fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
@@ -4011,10 +3777,16 @@ Widget _buildSummaryRow(String label, String value, Color color) {
           builder: (context) => HourlyInputPage(
             hourlyUpdate: update,
             department: widget.department,
+            po: widget.po,
+            style: widget.style,
             onSave: () {
               setState(() {});
               if (widget.onHourlySave != null) {
-                widget.onHourlySave!(widget.po, widget.style, widget.department);
+                widget.onHourlySave!(
+                  widget.po,
+                  widget.style,
+                  widget.department,
+                );
               }
             },
           ),
@@ -4030,10 +3802,16 @@ Widget _buildSummaryRow(String label, String value, Color color) {
           builder: (context) => HourlyInputPage(
             hourlyUpdate: update,
             department: widget.department,
+            po: widget.po,
+            style: widget.style,
             onSave: () {
               setState(() {});
               if (widget.onHourlySave != null) {
-                widget.onHourlySave!(widget.po, widget.style, widget.department);
+                widget.onHourlySave!(
+                  widget.po,
+                  widget.style,
+                  widget.department,
+                );
               }
             },
           ),
@@ -4049,6 +3827,8 @@ Widget _buildSummaryRow(String label, String value, Color color) {
         builder: (context) => HourlyInputPage(
           hourlyUpdate: update,
           department: widget.department,
+          po: widget.po,
+          style: widget.style,
           onSave: () {
             setState(() {});
             if (widget.onHourlySave != null) {
@@ -4066,6 +3846,8 @@ Widget _buildSummaryRow(String label, String value, Color color) {
       MaterialPageRoute(
         builder: (context) => FinishingInputPage(
           update: update,
+          style: widget.style,
+          po: widget.po,
           onSave: () {
             setState(() {});
             if (widget.onHourlySave != null) {
@@ -4081,18 +3863,20 @@ Widget _buildSummaryRow(String label, String value, Color color) {
 class FinishingInputPage extends StatefulWidget {
   final HourlyUpdate update;
   final VoidCallback onSave;
+  final StyleItem? style;
+  final PurchaseOrder? po;
 
   const FinishingInputPage({
     super.key,
     required this.update,
     required this.onSave,
+    this.style,
+    this.po,
   });
 
   @override
   State<FinishingInputPage> createState() => _FinishingInputPageState();
 }
-
-
 
 // ==================== SEWING INPUT PAGE (Separate) ====================
 
@@ -4100,7 +3884,11 @@ class SewingInputPage extends StatefulWidget {
   final HourlyUpdate update;
   final VoidCallback onSave;
 
-  const SewingInputPage({super.key, required this.update, required this.onSave});
+  const SewingInputPage({
+    super.key,
+    required this.update,
+    required this.onSave,
+  });
 
   @override
   State<SewingInputPage> createState() => _SewingInputPageState();
@@ -4134,7 +3922,10 @@ class _SewingInputPageState extends State<SewingInputPage> {
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         title: Text('Hour ${widget.update.hour} - Sewing'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: Column(
         children: [
@@ -4144,18 +3935,36 @@ class _SewingInputPageState extends State<SewingInputPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Style / Color / Item', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text(
+                    'Style / Color / Item',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   const SizedBox(height: 8),
-                  TextField(controller: styleController, decoration: const InputDecoration(labelText: 'Style')),
+                  TextField(
+                    controller: styleController,
+                    decoration: const InputDecoration(labelText: 'Style'),
+                  ),
                   const SizedBox(height: 8),
-                  TextField(controller: colorController, decoration: const InputDecoration(labelText: 'Color')),
+                  TextField(
+                    controller: colorController,
+                    decoration: const InputDecoration(labelText: 'Color'),
+                  ),
                   const SizedBox(height: 8),
-                  TextField(controller: itemController, decoration: const InputDecoration(labelText: 'Item')),
+                  TextField(
+                    controller: itemController,
+                    decoration: const InputDecoration(labelText: 'Item'),
+                  ),
                   const SizedBox(height: 12),
                   // Per-line sewing fields: Achieve and Daily Input, similar to finishing separated inputs
                   ...widget.update.lines.map((line) {
-                    final achieveController = TextEditingController(text: line.achieve == 0 ? '' : line.achieve.toString());
-                    final inputController = TextEditingController(text: line.dailyInput == 0 ? '' : line.dailyInput.toString());
+                    final achieveController = TextEditingController(
+                      text: line.achieve == 0 ? '' : line.achieve.toString(),
+                    );
+                    final inputController = TextEditingController(
+                      text: line.dailyInput == 0
+                          ? ''
+                          : line.dailyInput.toString(),
+                    );
                     return Card(
                       margin: const EdgeInsets.only(bottom: 8),
                       child: Padding(
@@ -4163,11 +3972,30 @@ class _SewingInputPageState extends State<SewingInputPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(line.style.isNotEmpty ? line.style : 'Line ${line.lineNumber}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                            Text(
+                              line.style.isNotEmpty
+                                  ? line.style
+                                  : 'Line ${line.lineNumber}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                             const SizedBox(height: 8),
-                            TextField(controller: achieveController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Achieve')),
+                            TextField(
+                              controller: achieveController,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                labelText: 'Achieve',
+                              ),
+                            ),
                             const SizedBox(height: 8),
-                            TextField(controller: inputController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Daily Input')),
+                            TextField(
+                              controller: inputController,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                labelText: 'Daily Input',
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -4181,7 +4009,12 @@ class _SewingInputPageState extends State<SewingInputPage> {
             padding: const EdgeInsets.all(12),
             child: Row(
               children: [
-                Expanded(child: OutlinedButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel'))),
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel'),
+                  ),
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
@@ -4217,19 +4050,33 @@ class _FinishingInputPageState extends State<FinishingInputPage> {
   late TextEditingController colorController;
   late TextEditingController itemController;
 
-  final buyerOptions = ['Winner Jeans', 'Dreamtex', 'Fashion Fast'];
-
   @override
   void initState() {
     super.initState();
-    qcTargetController = TextEditingController(text: widget.update.qcTarget.toString());
-    qcAchieveController = TextEditingController(text: widget.update.qcAchieve.toString());
-    polyTargetController = TextEditingController(text: widget.update.polyTarget.toString());
-    polyAchieveController = TextEditingController(text: widget.update.polyAchieve.toString());
-    ironTargetController = TextEditingController(text: widget.update.ironTarget.toString());
-    ironAchieveController = TextEditingController(text: widget.update.ironAchieve.toString());
-    manpowerController = TextEditingController(text: widget.update.totalFinishingManpower.toString());
-    operatorController = TextEditingController(text: widget.update.finishingOperator);
+    qcTargetController = TextEditingController(
+      text: widget.update.qcTarget.toString(),
+    );
+    qcAchieveController = TextEditingController(
+      text: widget.update.qcAchieve.toString(),
+    );
+    polyTargetController = TextEditingController(
+      text: widget.update.polyTarget.toString(),
+    );
+    polyAchieveController = TextEditingController(
+      text: widget.update.polyAchieve.toString(),
+    );
+    ironTargetController = TextEditingController(
+      text: widget.update.ironTarget.toString(),
+    );
+    ironAchieveController = TextEditingController(
+      text: widget.update.ironAchieve.toString(),
+    );
+    manpowerController = TextEditingController(
+      text: widget.update.totalFinishingManpower.toString(),
+    );
+    operatorController = TextEditingController(
+      text: widget.update.finishingOperator,
+    );
     styleController = TextEditingController(text: widget.update.style);
     colorController = TextEditingController(text: widget.update.color);
     itemController = TextEditingController(text: widget.update.item);
@@ -4262,7 +4109,9 @@ class _FinishingInputPageState extends State<FinishingInputPage> {
         appBar: AppBar(
           backgroundColor: Colors.purple,
           foregroundColor: Colors.white,
-          title: Text('Hour ${widget.update.hour == 11 ? 'Overtime' : widget.update.hour} - Finishing'),
+          title: Text(
+            'Hour ${widget.update.hour == 11 ? 'Overtime' : widget.update.hour} - Finishing',
+          ),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () => Navigator.pop(context),
@@ -4287,26 +4136,58 @@ class _FinishingInputPageState extends State<FinishingInputPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Buyer Name (Select 2-3)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.blue)),
+                          const Text(
+                            'Buyer Name (Select 2-3)',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              color: Colors.blue,
+                            ),
+                          ),
                           const SizedBox(height: 8),
                           Column(
-                            children: buyerOptions.map((buyer) {
-                              return CheckboxListTile(
-                                dense: true,
-                                contentPadding: EdgeInsets.zero,
-                                value: widget.update.buyerNames.contains(buyer),
-                                onChanged: (val) {
-                                  setState(() {
-                                    if (val == true) widget.update.buyerNames.add(buyer);
-                                    else widget.update.buyerNames.remove(buyer);
-                                  });
-                                },
-                                title: Text(buyer, style: const TextStyle(fontSize: 12)),
-                                activeColor: Colors.blue,
-                              );
-                            }).toList(),
+                            children: (() {
+                              // Use actual buyer name from style, fallback to hard-coded options
+                              final buyerOptions =
+                                  widget.style?.buyerName.isNotEmpty == true
+                                  ? [widget.style!.buyerName]
+                                  : [
+                                      'Winner Jeans',
+                                      'Dreamtex',
+                                      'Fashion Fast',
+                                    ];
+                              return buyerOptions.map((buyer) {
+                                return CheckboxListTile(
+                                  dense: true,
+                                  contentPadding: EdgeInsets.zero,
+                                  value: widget.update.buyerNames.contains(
+                                    buyer,
+                                  ),
+                                  onChanged: (val) {
+                                    setState(() {
+                                      if (val == true)
+                                        widget.update.buyerNames.add(buyer);
+                                      else
+                                        widget.update.buyerNames.remove(buyer);
+                                    });
+                                  },
+                                  title: Text(
+                                    buyer,
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                  activeColor: Colors.blue,
+                                );
+                              }).toList();
+                            })(),
                           ),
-                          Text('Selected: ${widget.update.buyerNames.isNotEmpty ? widget.update.buyerNames.join(", ") : "None"}', style: const TextStyle(fontSize: 11, fontStyle: FontStyle.italic, color: Colors.blue)),
+                          Text(
+                            'Selected: ${widget.update.buyerNames.isNotEmpty ? widget.update.buyerNames.join(", ") : "None"}',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontStyle: FontStyle.italic,
+                              color: Colors.blue,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -4320,17 +4201,73 @@ class _FinishingInputPageState extends State<FinishingInputPage> {
                     // Style/Color/Item
                     Container(
                       padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(color: Colors.purple[50], borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.purple[200]!)),
+                      decoration: BoxDecoration(
+                        color: Colors.purple[50],
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.purple[200]!),
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Style, Color, Item', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.purple)),
+                          const Text(
+                            'Style, Color, Item',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              color: Colors.purple,
+                            ),
+                          ),
                           const SizedBox(height: 10),
-                          TextField(controller: styleController, decoration: InputDecoration(labelText: 'Style', isDense: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)), contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8)), style: const TextStyle(fontSize: 12), onChanged: (val) => widget.update.style = val),
+                          TextField(
+                            controller: styleController,
+                            decoration: InputDecoration(
+                              labelText: 'Style',
+                              isDense: true,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 8,
+                              ),
+                            ),
+                            style: const TextStyle(fontSize: 12),
+                            onChanged: (val) => widget.update.style = val,
+                          ),
                           const SizedBox(height: 10),
-                          TextField(controller: colorController, decoration: InputDecoration(labelText: 'Color', isDense: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)), contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8)), style: const TextStyle(fontSize: 12), onChanged: (val) => widget.update.color = val),
+                          TextField(
+                            controller: colorController,
+                            decoration: InputDecoration(
+                              labelText: 'Color',
+                              isDense: true,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 8,
+                              ),
+                            ),
+                            style: const TextStyle(fontSize: 12),
+                            onChanged: (val) => widget.update.color = val,
+                          ),
                           const SizedBox(height: 10),
-                          TextField(controller: itemController, decoration: InputDecoration(labelText: 'Item', isDense: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)), contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8)), style: const TextStyle(fontSize: 12), onChanged: (val) => widget.update.item = val),
+                          TextField(
+                            controller: itemController,
+                            decoration: InputDecoration(
+                              labelText: 'Item',
+                              isDense: true,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 8,
+                              ),
+                            ),
+                            style: const TextStyle(fontSize: 12),
+                            onChanged: (val) => widget.update.item = val,
+                          ),
                         ],
                       ),
                     ),
@@ -4338,23 +4275,86 @@ class _FinishingInputPageState extends State<FinishingInputPage> {
                     // Manpower + Operator
                     Container(
                       padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(color: Colors.orange[50], borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.orange[200]!)),
-                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        const Text('Total Finishing Manpower', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.orange)),
-                        const SizedBox(height: 8),
-                        TextField(keyboardType: TextInputType.number, controller: manpowerController, decoration: InputDecoration(labelText: 'Number of Workers', isDense: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)), contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8)), style: const TextStyle(fontSize: 12), onChanged: (val) => widget.update.totalFinishingManpower = int.tryParse(val) ?? 0),
-                      ]),
+                      decoration: BoxDecoration(
+                        color: Colors.orange[50],
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.orange[200]!),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Total Finishing Manpower',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              color: Colors.orange,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          TextField(
+                            keyboardType: TextInputType.number,
+                            controller: manpowerController,
+                            decoration: InputDecoration(
+                              labelText: 'Number of Workers',
+                              isDense: true,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 8,
+                              ),
+                            ),
+                            style: const TextStyle(fontSize: 12),
+                            onChanged: (val) =>
+                                widget.update.totalFinishingManpower =
+                                    int.tryParse(val) ?? 0,
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 16),
                     // Finishing Operator
                     Container(
                       padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(color: Colors.purple[50], borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.purple[200]!)),
-                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        const Text('Finishing Operator', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.purple)),
-                        const SizedBox(height: 8),
-                        TextField(keyboardType: TextInputType.text, controller: operatorController, decoration: InputDecoration(labelText: 'Operator', isDense: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)), contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8)), style: const TextStyle(fontSize: 12), onChanged: (val) => widget.update.finishingOperator = val),
-                      ]),
+                      decoration: BoxDecoration(
+                        color: Colors.purple[50],
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.purple[200]!),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Finishing Operator',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              color: Colors.purple,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          TextField(
+                            keyboardType: TextInputType.text,
+                            controller: operatorController,
+                            decoration: InputDecoration(
+                              labelText: 'Operator',
+                              isDense: true,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 8,
+                              ),
+                            ),
+                            style: const TextStyle(fontSize: 12),
+                            onChanged: (val) =>
+                                widget.update.finishingOperator = val,
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 20),
                   ],
@@ -4367,82 +4367,125 @@ class _FinishingInputPageState extends State<FinishingInputPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ElevatedButton(onPressed: () => Navigator.pop(context), style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[400], foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12)), child: const Text('Cancel')),
-                  ElevatedButton(onPressed: () {
-                    // Sync finishing summary into OrderManager so Finishing supervisor can see it
-                    try {
-                      final orders = orderManager.getAllOrders();
-                      if (orders.isNotEmpty) {
-                        final order = orders[0];
-                        final finishingTotal = widget.update.qcAchieve + widget.update.polyAchieve + widget.update.ironAchieve;
-                        // Try to find existing finishing line by style+item+color
-                        final matchIndex = order.lines.indexWhere((ol) =>
-                            ol.department == 'Finishing' &&
-                            ol.style == widget.update.style &&
-                            ol.item == widget.update.item &&
-                            ol.color == widget.update.color);
-                        if (matchIndex != -1) {
-                          final existing = order.lines[matchIndex];
-                          existing.achieve = existing.achieve + finishingTotal;
-                          existing.dailyInput = existing.dailyInput + finishingTotal;
-                          existing.operator = widget.update.finishingOperator;
-                          // update finishing targets too
-                          existing.qcTarget = widget.update.qcTarget;
-                          existing.polyTarget = widget.update.polyTarget;
-                          existing.ironTarget = widget.update.ironTarget;
-                        } else {
-                          final orderLine = OrderLineData(
-                            buyerName: widget.update.buyerNames.isNotEmpty ? widget.update.buyerNames.first : '',
-                            style: widget.update.style,
-                            item: widget.update.item,
-                            color: widget.update.color,
-                            target: 0,
-                            operator: widget.update.finishingOperator,
-                            shortOperator: '',
-                            bartechOperator: '',
-                            bartechHelper: '',
-                            dailyCutting: 0,
-                            dailyInput: finishingTotal,
-                            department: 'Finishing',
-                            achieve: finishingTotal,
-                            qcTarget: widget.update.qcTarget,
-                            polyTarget: widget.update.polyTarget,
-                            ironTarget: widget.update.ironTarget,
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey[400],
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 12,
+                      ),
+                    ),
+                    child: const Text('Cancel'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      // Sync finishing summary into OrderManager so Finishing supervisor can see it
+                      try {
+                        final orders = orderManager.getAllOrders();
+                        if (orders.isNotEmpty) {
+                          final order = orders[0];
+                          final finishingTotal =
+                              widget.update.qcAchieve +
+                              widget.update.polyAchieve +
+                              widget.update.ironAchieve;
+                          // Try to find existing finishing line by style+item+color
+                          final matchIndex = order.lines.indexWhere(
+                            (ol) =>
+                                ol.department == 'Finishing' &&
+                                ol.style == widget.update.style &&
+                                ol.item == widget.update.item &&
+                                ol.color == widget.update.color,
                           );
-                          order.lines.add(orderLine);
+                          if (matchIndex != -1) {
+                            final existing = order.lines[matchIndex];
+                            existing.achieve =
+                                existing.achieve + finishingTotal;
+                            existing.dailyInput =
+                                existing.dailyInput + finishingTotal;
+                            existing.operator = widget.update.finishingOperator;
+                            // update finishing targets too
+                            existing.qcTarget = widget.update.qcTarget;
+                            existing.polyTarget = widget.update.polyTarget;
+                            existing.ironTarget = widget.update.ironTarget;
+                          } else {
+                            final orderLine = OrderLineData(
+                              buyerName: widget.update.buyerNames.isNotEmpty
+                                  ? widget.update.buyerNames.first
+                                  : '',
+                              style: widget.update.style,
+                              item: widget.update.item,
+                              color: widget.update.color,
+                              target: 0,
+                              operator: widget.update.finishingOperator,
+                              shortOperator: '',
+                              bartechOperator: '',
+                              bartechHelper: '',
+                              dailyCutting: 0,
+                              dailyInput: finishingTotal,
+                              department: 'Finishing',
+                              achieve: finishingTotal,
+                              qcTarget: widget.update.qcTarget,
+                              polyTarget: widget.update.polyTarget,
+                              ironTarget: widget.update.ironTarget,
+                            );
+                            order.lines.add(orderLine);
+                          }
                         }
+                      } catch (e) {
+                        print('Finishing sync error: $e');
                       }
-                    } catch (e) {
-                      print('Finishing sync error: $e');
-                    }
-                    // Also sync finishing achieves/targets into admin globalPurchaseOrders HourlyUpdate entries
-                    try {
-                      for (var po in globalPurchaseOrders) {
-                        for (var style in po.styles) {
-                          // Only update the Finishing department hourly updates for the specific hour
-                          final finishingList = style.departmentHourlyUpdates['Finishing'] ?? [];
-                          for (var hourly in finishingList) {
-                            final buyerMatch = widget.update.buyerNames.isEmpty
-                                ? true
-                                : (hourly.buyerNames.isNotEmpty && hourly.buyerNames.first == widget.update.buyerNames.first);
-                            if (hourly.hour == widget.update.hour && hourly.style == widget.update.style && buyerMatch) {
-                              hourly.qcAchieve = hourly.qcAchieve + widget.update.qcAchieve;
-                              hourly.polyAchieve = hourly.polyAchieve + widget.update.polyAchieve;
-                              hourly.ironAchieve = hourly.ironAchieve + widget.update.ironAchieve;
-                              // Update targets only for the specific hour so targets are unique per hour
-                              hourly.qcTarget = widget.update.qcTarget;
-                              hourly.polyTarget = widget.update.polyTarget;
-                              hourly.ironTarget = widget.update.ironTarget;
+                      // Also sync finishing achieves/targets into admin globalPurchaseOrders HourlyUpdate entries
+                      try {
+                        for (var po in globalPurchaseOrders) {
+                          for (var style in po.styles) {
+                            // Only update the Finishing department hourly updates for the specific hour
+                            final finishingList =
+                                style.departmentHourlyUpdates['Finishing'] ??
+                                [];
+                            for (var hourly in finishingList) {
+                              final buyerMatch =
+                                  widget.update.buyerNames.isEmpty
+                                  ? true
+                                  : (hourly.buyerNames.isNotEmpty &&
+                                        hourly.buyerNames.first ==
+                                            widget.update.buyerNames.first);
+                              if (hourly.hour == widget.update.hour &&
+                                  hourly.style == widget.update.style &&
+                                  buyerMatch) {
+                                hourly.qcAchieve =
+                                    hourly.qcAchieve + widget.update.qcAchieve;
+                                hourly.polyAchieve =
+                                    hourly.polyAchieve +
+                                    widget.update.polyAchieve;
+                                hourly.ironAchieve =
+                                    hourly.ironAchieve +
+                                    widget.update.ironAchieve;
+                                // Update targets only for the specific hour so targets are unique per hour
+                                hourly.qcTarget = widget.update.qcTarget;
+                                hourly.polyTarget = widget.update.polyTarget;
+                                hourly.ironTarget = widget.update.ironTarget;
+                              }
                             }
                           }
                         }
+                      } catch (e) {
+                        print('Finishing admin-hourly sync error: $e');
                       }
-                    } catch (e) {
-                      print('Finishing admin-hourly sync error: $e');
-                    }
-                    widget.onSave();
-                    Navigator.pop(context);
-                  }, style: ElevatedButton.styleFrom(backgroundColor: Colors.purple, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12)), child: const Text('Save')),
+                      widget.onSave();
+                      Navigator.pop(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.purple,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 12,
+                      ),
+                    ),
+                    child: const Text('Save'),
+                  ),
                 ],
               ),
             ),
@@ -4455,48 +4498,210 @@ class _FinishingInputPageState extends State<FinishingInputPage> {
   Widget _buildQCField() {
     return Container(
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: Colors.green[50], borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.green[200]!)),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('✓ QC', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.green)),
-        const SizedBox(height: 10),
-        Row(children: [
-          Expanded(child: TextField(controller: qcTargetController, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: 'Total Target', isDense: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)), contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8)), style: const TextStyle(fontSize: 12), onChanged: (val) => widget.update.qcTarget = int.tryParse(val) ?? 0)),
-          const SizedBox(width: 10),
-          Expanded(child: TextField(controller: qcAchieveController, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: 'Achieve', isDense: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)), contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8)), style: const TextStyle(fontSize: 12), onChanged: (val) => widget.update.qcAchieve = int.tryParse(val) ?? 0)),
-        ])
-      ]),
+      decoration: BoxDecoration(
+        color: Colors.green[50],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.green[200]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            '✓ QC',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+              color: Colors.green,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: qcTargetController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Total Target',
+                    isDense: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
+                    ),
+                  ),
+                  style: const TextStyle(fontSize: 12),
+                  onChanged: (val) =>
+                      widget.update.qcTarget = int.tryParse(val) ?? 0,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: TextField(
+                  controller: qcAchieveController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Achieve',
+                    isDense: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
+                    ),
+                  ),
+                  style: const TextStyle(fontSize: 12),
+                  onChanged: (val) =>
+                      widget.update.qcAchieve = int.tryParse(val) ?? 0,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildPolyField() {
     return Container(
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: Colors.green[50], borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.green[200]!)),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('📦 Poly', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.green)),
-        const SizedBox(height: 10),
-        Row(children: [
-          Expanded(child: TextField(controller: polyTargetController, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: 'Total Target', isDense: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)), contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8)), style: const TextStyle(fontSize: 12), onChanged: (val) => widget.update.polyTarget = int.tryParse(val) ?? 0)),
-          const SizedBox(width: 10),
-          Expanded(child: TextField(controller: polyAchieveController, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: 'Achieve', isDense: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)), contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8)), style: const TextStyle(fontSize: 12), onChanged: (val) => widget.update.polyAchieve = int.tryParse(val) ?? 0)),
-        ])
-      ]),
+      decoration: BoxDecoration(
+        color: Colors.green[50],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.green[200]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            '📦 Poly',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+              color: Colors.green,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: polyTargetController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Total Target',
+                    isDense: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
+                    ),
+                  ),
+                  style: const TextStyle(fontSize: 12),
+                  onChanged: (val) =>
+                      widget.update.polyTarget = int.tryParse(val) ?? 0,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: TextField(
+                  controller: polyAchieveController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Achieve',
+                    isDense: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
+                    ),
+                  ),
+                  style: const TextStyle(fontSize: 12),
+                  onChanged: (val) =>
+                      widget.update.polyAchieve = int.tryParse(val) ?? 0,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildIronField() {
     return Container(
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: Colors.green[50], borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.green[200]!)),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('🔩 Iron', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.green)),
-        const SizedBox(height: 10),
-        Row(children: [
-          Expanded(child: TextField(controller: ironTargetController, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: 'Total Target', isDense: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)), contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8)), style: const TextStyle(fontSize: 12), onChanged: (val) => widget.update.ironTarget = int.tryParse(val) ?? 0)),
-          const SizedBox(width: 10),
-          Expanded(child: TextField(controller: ironAchieveController, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: 'Achieve', isDense: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)), contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8)), style: const TextStyle(fontSize: 12), onChanged: (val) => widget.update.ironAchieve = int.tryParse(val) ?? 0)),
-        ])
-      ]),
+      decoration: BoxDecoration(
+        color: Colors.green[50],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.green[200]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            '🔩 Iron',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+              color: Colors.green,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: ironTargetController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Total Target',
+                    isDense: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
+                    ),
+                  ),
+                  style: const TextStyle(fontSize: 12),
+                  onChanged: (val) =>
+                      widget.update.ironTarget = int.tryParse(val) ?? 0,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: TextField(
+                  controller: ironAchieveController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Achieve',
+                    isDense: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
+                    ),
+                  ),
+                  style: const TextStyle(fontSize: 12),
+                  onChanged: (val) =>
+                      widget.update.ironAchieve = int.tryParse(val) ?? 0,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -4530,7 +4735,12 @@ class _ProductionTrackingViewState extends State<ProductionTrackingView> {
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          ...widget.purchaseOrders.expand((po) => po.styles.map((style) => _buildQuickUpdateCard(po, style))).toList(),
+          ...widget.purchaseOrders
+              .expand(
+                (po) =>
+                    po.styles.map((style) => _buildQuickUpdateCard(po, style)),
+              )
+              .toList(),
         ],
       ),
     );
@@ -4561,11 +4771,14 @@ class _ProductionTrackingViewState extends State<ProductionTrackingView> {
                   child: SizedBox(
                     height: 44,
                     child: ElevatedButton(
-                      onPressed: () => _showDepartmentReport(po, style, 'Cutting'),
+                      onPressed: () =>
+                          _showDepartmentReport(po, style, 'Cutting'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                       child: const Text('Cutting'),
                     ),
@@ -4576,11 +4789,14 @@ class _ProductionTrackingViewState extends State<ProductionTrackingView> {
                   child: SizedBox(
                     height: 44,
                     child: ElevatedButton(
-                      onPressed: () => _showDepartmentReport(po, style, 'Sewing'),
+                      onPressed: () =>
+                          _showDepartmentReport(po, style, 'Sewing'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                       child: const Text('Sewing'),
                     ),
@@ -4591,11 +4807,14 @@ class _ProductionTrackingViewState extends State<ProductionTrackingView> {
                   child: SizedBox(
                     height: 44,
                     child: ElevatedButton(
-                      onPressed: () => _showDepartmentReport(po, style, 'Finishing'),
+                      onPressed: () =>
+                          _showDepartmentReport(po, style, 'Finishing'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                       child: const Text('Finishing'),
                     ),
@@ -4639,7 +4858,8 @@ class DailyReportsView extends StatefulWidget {
   State<DailyReportsView> createState() => _DailyReportsViewState();
 }
 
-class _DailyReportsViewState extends State<DailyReportsView> with SingleTickerProviderStateMixin {
+class _DailyReportsViewState extends State<DailyReportsView>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -4689,13 +4909,21 @@ class _DailyReportsViewState extends State<DailyReportsView> with SingleTickerPr
   }
 
   Widget _buildDepartmentReportTab(String department) {
-    final deptReports = widget.reports.where((r) => r.department == department).toList();
-    
-    // Group by style
-    final groupedByStyle = <String, List<ProductionReport>>{};
+    final deptReports = widget.reports
+        .where((r) => r.department == department)
+        .toList();
+
+    // Group by Date -> List of reports
+    final groupedByDate = <String, List<ProductionReport>>{};
+
     for (final report in deptReports) {
-      final key = '${report.poNumber}-${report.styleId}';
-      groupedByStyle.putIfAbsent(key, () => []).add(report);
+      final date = report.date;
+
+      if (!groupedByDate.containsKey(date)) {
+        groupedByDate[date] = [];
+      }
+
+      groupedByDate[date]!.add(report);
     }
 
     return SingleChildScrollView(
@@ -4719,18 +4947,26 @@ class _DailyReportsViewState extends State<DailyReportsView> with SingleTickerPr
               ),
             )
           else
-            ...groupedByStyle.entries.map(
-              (entry) {
-                return _buildStyleReportCard(entry.value);
-              },
-            ).toList(),
+            ...groupedByDate.entries.map((dateEntry) {
+              final date = dateEntry.key;
+              final reports = dateEntry.value;
+
+              return _buildStyleReportCard(reports, date, 0);
+            }).toList(),
         ],
       ),
     );
   }
 
-  Widget _buildStyleReportCard(List<ProductionReport> reports) {
-    return ReportCardDisplay(reports: reports);
+  Widget _buildStyleReportCard(
+    List<ProductionReport> reports,
+    String date,
+    int unit,
+  ) {
+    return ReportCardDisplay(
+      reports: reports,
+      dateHeader: '$date - Unit $unit',
+    );
   }
 }
 
@@ -4738,16 +4974,19 @@ class _DailyReportsViewState extends State<DailyReportsView> with SingleTickerPr
 
 class ReportCardDisplay extends StatefulWidget {
   final List<ProductionReport> reports;
+  final String? dateHeader;
 
-  const ReportCardDisplay({required this.reports, super.key});
+  const ReportCardDisplay({required this.reports, this.dateHeader, super.key});
 
   @override
   State<ReportCardDisplay> createState() => _ReportCardDisplayState();
 }
 
-class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTickerProviderStateMixin {
+class _ReportCardDisplayState extends State<ReportCardDisplay>
+    with SingleTickerProviderStateMixin {
   bool showDailyView = false;
-  int selectedUnitTab = -1; // -1 means no unit selected (default view), otherwise unit number
+  int selectedUnitTab =
+      -1; // -1 means no unit selected (default view), otherwise unit number
   late PageController _pageController;
 
   @override
@@ -4765,13 +5004,15 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
   @override
   Widget build(BuildContext context) {
     if (widget.reports.isEmpty) return const SizedBox.shrink();
-    
+
     final firstReport = widget.reports.first;
-    
+
     // Ensure all reports are from the same department
     final department = firstReport.department;
-    final sameDepReports = widget.reports.where((r) => r.department == department).toList();
-    
+    final sameDepReports = widget.reports
+        .where((r) => r.department == department)
+        .toList();
+
     if (sameDepReports.isEmpty) return const SizedBox.shrink();
 
     // For Sewing, get all unique units
@@ -4816,12 +5057,18 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
                       showDailyView = !showDailyView;
                     });
                   },
-                  icon: Icon(showDailyView ? Icons.list : Icons.calendar_today, size: 14),
+                  icon: Icon(
+                    showDailyView ? Icons.list : Icons.calendar_today,
+                    size: 14,
+                  ),
                   label: Text(showDailyView ? 'View Hourly' : 'View Daily'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                   ),
                 ),
               ],
@@ -4842,13 +5089,20 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
                           });
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
                           margin: const EdgeInsets.only(right: 8),
                           decoration: BoxDecoration(
-                            color: selectedUnitTab == -1 ? Colors.blue : Colors.grey[200],
+                            color: selectedUnitTab == -1
+                                ? Colors.blue
+                                : Colors.grey[200],
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: selectedUnitTab == -1 ? Colors.blue : Colors.grey[300]!,
+                              color: selectedUnitTab == -1
+                                  ? Colors.blue
+                                  : Colors.grey[300]!,
                             ),
                           ),
                           child: Text(
@@ -4856,7 +5110,9 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
-                              color: selectedUnitTab == -1 ? Colors.white : Colors.black87,
+                              color: selectedUnitTab == -1
+                                  ? Colors.white
+                                  : Colors.black87,
                             ),
                           ),
                         ),
@@ -4869,13 +5125,20 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
                             });
                           },
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
                             margin: const EdgeInsets.only(right: 8),
                             decoration: BoxDecoration(
-                              color: selectedUnitTab == unit ? Colors.blue : Colors.grey[200],
+                              color: selectedUnitTab == unit
+                                  ? Colors.blue
+                                  : Colors.grey[200],
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                color: selectedUnitTab == unit ? Colors.blue : Colors.grey[300]!,
+                                color: selectedUnitTab == unit
+                                    ? Colors.blue
+                                    : Colors.grey[300]!,
                               ),
                             ),
                             child: Text(
@@ -4883,7 +5146,9 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
-                                color: selectedUnitTab == unit ? Colors.white : Colors.black87,
+                                color: selectedUnitTab == unit
+                                    ? Colors.white
+                                    : Colors.black87,
                               ),
                             ),
                           ),
@@ -4938,30 +5203,96 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
                               children: [
                                 // Show buyers/style/color/item using hourlyData when available for any department
                                 // For Sewing with selected unit, filter data accordingly
-                                if (report.hourlyData.isNotEmpty && report.hourlyData.values.any((h) => h.buyerNames.isNotEmpty))
-                                  _buildInfoChip('🏭 Buyer', _getFilteredHourlyData(report.hourlyData, report.department).values
-                                    .where((h) => h.buyerNames.isNotEmpty)
-                                    .map((h) => h.buyerNames.join(', '))
-                                    .toList()
-                                    .join(', ')),
-                                _buildInfoChip('🎨 Style', 
+                                if (report.hourlyData.isNotEmpty &&
+                                    report.hourlyData.values.any(
+                                      (h) => h.buyerNames.isNotEmpty,
+                                    ))
+                                  _buildInfoChip(
+                                    '🏭 Buyer',
+                                    _getFilteredHourlyData(
+                                          report.hourlyData,
+                                          report.department,
+                                        ).values
+                                        .where((h) => h.buyerNames.isNotEmpty)
+                                        .map((h) => h.buyerNames.join(', '))
+                                        .toList()
+                                        .join(', '),
+                                  ),
+                                _buildInfoChip(
+                                  '🎨 Style',
                                   report.hourlyData.isNotEmpty
-                                    ? (report.hourlyData.values.firstWhere((h) => h.style.isNotEmpty, orElse: () => report.hourlyData.values.first).style.isNotEmpty 
-                                      ? report.hourlyData.values.firstWhere((h) => h.style.isNotEmpty, orElse: () => report.hourlyData.values.first).style
-                                      : report.styleName)
-                                    : report.styleName),
-                                _buildInfoChip('🌈 Color', 
+                                      ? (report.hourlyData.values
+                                                .firstWhere(
+                                                  (h) => h.style.isNotEmpty,
+                                                  orElse: () => report
+                                                      .hourlyData
+                                                      .values
+                                                      .first,
+                                                )
+                                                .style
+                                                .isNotEmpty
+                                            ? report.hourlyData.values
+                                                  .firstWhere(
+                                                    (h) => h.style.isNotEmpty,
+                                                    orElse: () => report
+                                                        .hourlyData
+                                                        .values
+                                                        .first,
+                                                  )
+                                                  .style
+                                            : report.styleName)
+                                      : report.styleName,
+                                ),
+                                _buildInfoChip(
+                                  '🌈 Color',
                                   report.hourlyData.isNotEmpty
-                                    ? (report.hourlyData.values.firstWhere((h) => h.color.isNotEmpty, orElse: () => report.hourlyData.values.first).color.isNotEmpty 
-                                      ? report.hourlyData.values.firstWhere((h) => h.color.isNotEmpty, orElse: () => report.hourlyData.values.first).color
-                                      : report.color)
-                                    : report.color),
-                                _buildInfoChip('📦 Item', 
+                                      ? (report.hourlyData.values
+                                                .firstWhere(
+                                                  (h) => h.color.isNotEmpty,
+                                                  orElse: () => report
+                                                      .hourlyData
+                                                      .values
+                                                      .first,
+                                                )
+                                                .color
+                                                .isNotEmpty
+                                            ? report.hourlyData.values
+                                                  .firstWhere(
+                                                    (h) => h.color.isNotEmpty,
+                                                    orElse: () => report
+                                                        .hourlyData
+                                                        .values
+                                                        .first,
+                                                  )
+                                                  .color
+                                            : report.color)
+                                      : report.color,
+                                ),
+                                _buildInfoChip(
+                                  '📦 Item',
                                   report.hourlyData.isNotEmpty
-                                    ? (report.hourlyData.values.firstWhere((h) => h.item.isNotEmpty, orElse: () => report.hourlyData.values.first).item.isNotEmpty 
-                                      ? report.hourlyData.values.firstWhere((h) => h.item.isNotEmpty, orElse: () => report.hourlyData.values.first).item
-                                      : report.itemType)
-                                    : report.itemType),
+                                      ? (report.hourlyData.values
+                                                .firstWhere(
+                                                  (h) => h.item.isNotEmpty,
+                                                  orElse: () => report
+                                                      .hourlyData
+                                                      .values
+                                                      .first,
+                                                )
+                                                .item
+                                                .isNotEmpty
+                                            ? report.hourlyData.values
+                                                  .firstWhere(
+                                                    (h) => h.item.isNotEmpty,
+                                                    orElse: () => report
+                                                        .hourlyData
+                                                        .values
+                                                        .first,
+                                                  )
+                                                  .item
+                                            : report.itemType)
+                                      : report.itemType,
+                                ),
                               ],
                             ),
                           ],
@@ -4982,7 +5313,13 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
                           ),
                           _buildReportStat(
                             'Balance',
-                            _calculateBalance(report, selectedUnit: selectedUnitTab) > 0 ? '${_calculateBalance(report, selectedUnit: selectedUnitTab)} Pcs' : '0 Pcs',
+                            _calculateBalance(
+                                      report,
+                                      selectedUnit: selectedUnitTab,
+                                    ) >
+                                    0
+                                ? '${_calculateBalance(report, selectedUnit: selectedUnitTab)} Pcs'
+                                : '0 Pcs',
                           ),
                         ],
                       ),
@@ -4991,30 +5328,42 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
                         Padding(
                           padding: const EdgeInsets.only(top: 12),
                           child: showDailyView
-                            ? _buildReportDailySummary(_getFilteredHourlyData(report.hourlyData, report.department), report.department)
-                                : Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Hourly Production',
-                                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                              ? _buildReportDailySummary(
+                                  _getFilteredHourlyData(
+                                    report.hourlyData,
+                                    report.department,
                                   ),
-                                  const SizedBox(height: 8),
-                                  _buildHourlyBarChart(_getFilteredHourlyData(report.hourlyData, report.department), report.department),
-                                ],
-                              ),
+                                  report.department,
+                                )
+                              : Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Hourly Production',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    _buildHourlyBarChart(
+                                      _getFilteredHourlyData(
+                                        report.hourlyData,
+                                        report.department,
+                                      ),
+                                      report.department,
+                                    ),
+                                  ],
+                                ),
                         ),
                     ],
                   ),
                 );
               }
             }).toList(),
-            
           ],
         ),
-        
       ),
-      
     );
   }
 
@@ -5026,7 +5375,9 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
         borderRadius: BorderRadius.circular(4),
         border: Border.all(color: Colors.grey[300]!),
       ),
-      constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.4),
+      constraints: BoxConstraints(
+        maxWidth: MediaQuery.of(context).size.width * 0.4,
+      ),
       child: Text(
         '$label: $value',
         style: const TextStyle(fontSize: 10),
@@ -5037,49 +5388,61 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
   }
 
   // Helper method to filter hourly data by selected unit (for Sewing)
-  Map<int, HourlyUpdate> _getFilteredHourlyData(Map<int, HourlyUpdate> hourlyData, String department) {
+  Map<int, HourlyUpdate> _getFilteredHourlyData(
+    Map<int, HourlyUpdate> hourlyData,
+    String department,
+  ) {
     if (department != 'Sewing' || selectedUnitTab == -1) {
       return hourlyData;
     }
-    
+
     final filteredData = <int, HourlyUpdate>{};
     for (final entry in hourlyData.entries) {
       final hour = entry.key;
       final update = entry.value;
-      
+
       // Filter lines by unit
-      final filteredLines = update.lines.where((line) => line.unitNumber == selectedUnitTab).toList();
-      
+      final filteredLines = update.lines
+          .where((line) => line.unitNumber == selectedUnitTab)
+          .toList();
+
       // Always include the hour, even if unit has no data for this hour
       // If no lines exist for this unit, create a placeholder
       if (filteredLines.isEmpty) {
         filteredLines.add(
-          LineData(lineNumber: 1, unitNumber: selectedUnitTab, target: 0, department: department),
+          LineData(
+            lineNumber: 1,
+            unitNumber: selectedUnitTab,
+            target: 0,
+            department: department,
+          ),
         );
       }
-      
+
       // Create a new HourlyUpdate with filtered lines
-      final filteredUpdate = HourlyUpdate(
-        hour: update.hour,
-        notes: update.notes,
-        date: update.date,
-      )..lines = filteredLines
-       ..buyerNames = update.buyerNames
-       ..style = update.style
-       ..color = update.color
-       ..item = update.item
-       ..qcTarget = update.qcTarget
-       ..qcAchieve = update.qcAchieve
-       ..polyTarget = update.polyTarget
-       ..polyAchieve = update.polyAchieve
-       ..ironTarget = update.ironTarget
-       ..ironAchieve = update.ironAchieve
-       ..finishingOperator = update.finishingOperator
-       ..totalFinishingManpower = update.totalFinishingManpower;
-      
+      final filteredUpdate =
+          HourlyUpdate(
+              hour: update.hour,
+              notes: update.notes,
+              date: update.date,
+            )
+            ..lines = filteredLines
+            ..buyerNames = update.buyerNames
+            ..style = update.style
+            ..color = update.color
+            ..item = update.item
+            ..qcTarget = update.qcTarget
+            ..qcAchieve = update.qcAchieve
+            ..polyTarget = update.polyTarget
+            ..polyAchieve = update.polyAchieve
+            ..ironTarget = update.ironTarget
+            ..ironAchieve = update.ironAchieve
+            ..finishingOperator = update.finishingOperator
+            ..totalFinishingManpower = update.totalFinishingManpower;
+
       filteredData[hour] = filteredUpdate;
     }
-    
+
     return filteredData;
   }
 
@@ -5096,7 +5459,10 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
     );
   }
 
-  Widget _buildHourlyBarChart(Map<int, HourlyUpdate> hourlyData, String department) {
+  Widget _buildHourlyBarChart(
+    Map<int, HourlyUpdate> hourlyData,
+    String department,
+  ) {
     final sortedHours = hourlyData.keys.toList()..sort();
     final barChartData = <BarChartGroupData>[];
 
@@ -5121,13 +5487,19 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
         );
       } else {
         final achieve = update.getTotalInput().toDouble();
-        final target = update.lines.fold<int>(0, (sum, line) => sum + line.target).toDouble();
+        final target = update.lines
+            .fold<int>(0, (sum, line) => sum + line.target)
+            .toDouble();
 
         barChartData.add(
           BarChartGroupData(
             x: i,
             barRods: [
-              BarChartRodData(toY: target, color: Colors.orange.withOpacity(0.7), width: 6),
+              BarChartRodData(
+                toY: target,
+                color: Colors.orange.withOpacity(0.7),
+                width: 6,
+              ),
               BarChartRodData(toY: achieve, color: Colors.green, width: 6),
             ],
           ),
@@ -5158,16 +5530,24 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
               BarChartData(
                 gridData: const FlGridData(show: false),
                 titlesData: FlTitlesData(
-                  topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  rightTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
                       getTitlesWidget: (value, meta) {
                         final index = value.toInt();
-                        if (index < 0 || index >= sortedHours.length) return const Text('');
+                        if (index < 0 || index >= sortedHours.length)
+                          return const Text('');
                         final hour = sortedHours[index];
-                        return Text('${hour}h', style: const TextStyle(fontSize: 8));
+                        return Text(
+                          '${hour}h',
+                          style: const TextStyle(fontSize: 8),
+                        );
                       },
                     ),
                   ),
@@ -5179,7 +5559,10 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
                         final maxInt = maxY.toInt();
                         final mid = (maxInt / 2).round();
                         if (intVal == 0 || intVal == mid || intVal == maxInt) {
-                          return Text('$intVal', style: const TextStyle(fontSize: 8));
+                          return Text(
+                            '$intVal',
+                            style: const TextStyle(fontSize: 8),
+                          );
                         }
                         return const SizedBox.shrink();
                       },
@@ -5198,24 +5581,59 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
               mainAxisAlignment: MainAxisAlignment.center,
               children: department == 'Finishing'
                   ? [
-                      Container(width: 12, height: 12, decoration: BoxDecoration(color: Colors.green, borderRadius: BorderRadius.circular(2))),
+                      Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
                       const SizedBox(width: 4),
                       const Text('QC', style: TextStyle(fontSize: 8)),
                       const SizedBox(width: 12),
-                      Container(width: 12, height: 12, decoration: BoxDecoration(color: Colors.blue, borderRadius: BorderRadius.circular(2))),
+                      Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: Colors.blue,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
                       const SizedBox(width: 4),
                       const Text('Poly', style: TextStyle(fontSize: 8)),
                       const SizedBox(width: 12),
-                      Container(width: 12, height: 12, decoration: BoxDecoration(color: Colors.purple, borderRadius: BorderRadius.circular(2))),
+                      Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: Colors.purple,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
                       const SizedBox(width: 4),
                       const Text('Iron', style: TextStyle(fontSize: 8)),
                     ]
                   : [
-                      Container(width: 12, height: 12, decoration: BoxDecoration(color: Colors.orange.withOpacity(0.7), borderRadius: BorderRadius.circular(2))),
+                      Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withOpacity(0.7),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
                       const SizedBox(width: 4),
                       const Text('Target', style: TextStyle(fontSize: 8)),
                       const SizedBox(width: 12),
-                      Container(width: 12, height: 12, decoration: BoxDecoration(color: Colors.green, borderRadius: BorderRadius.circular(2))),
+                      Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
                       const SizedBox(width: 4),
                       const Text('Achieve', style: TextStyle(fontSize: 8)),
                     ],
@@ -5226,7 +5644,10 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
     );
   }
 
-  Widget _buildReportDailySummary(Map<int, HourlyUpdate> hourlyData, String department) {
+  Widget _buildReportDailySummary(
+    Map<int, HourlyUpdate> hourlyData,
+    String department,
+  ) {
     if (hourlyData.isEmpty) return const SizedBox.shrink();
 
     int totalQcTarget = 0, totalQcAchieve = 0;
@@ -5267,29 +5688,64 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Daily Total Summary', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Colors.amber)),
+          const Text(
+            'Daily Total Summary',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 11,
+              color: Colors.amber,
+            ),
+          ),
           const SizedBox(height: 8),
           if (allBuyers.isNotEmpty)
-
-          if (style.isNotEmpty || color.isNotEmpty || item.isNotEmpty)
-  
-          if (department == 'Finishing')
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('QC: $totalQcAchieve/$totalQcTarget', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-                Text('Poly: $totalPolyAchieve/$totalPolyTarget', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-                Text('Iron: $totalIronAchieve/$totalIronTarget', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-              ],
-            )
-          else if (department == 'Cutting' || department == 'Sewing')
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Target: $totalTarget Pcs', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-                Text('Achieve: $totalAchieve Pcs', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-              ],
-            ),
+            if (style.isNotEmpty || color.isNotEmpty || item.isNotEmpty)
+              if (department == 'Finishing')
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'QC: $totalQcAchieve/$totalQcTarget',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      'Poly: $totalPolyAchieve/$totalPolyTarget',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      'Iron: $totalIronAchieve/$totalIronTarget',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                )
+              else if (department == 'Cutting' || department == 'Sewing')
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Target: $totalTarget Pcs',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      'Achieve: $totalAchieve Pcs',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
           const SizedBox(height: 12),
           // Daily summary chart - show per-department chart
           Container(
@@ -5301,18 +5757,36 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
               border: Border.all(color: Colors.grey[300]!),
             ),
             child: department == 'Finishing'
-                ? _buildFinishingDailyChart(totalQcTarget, totalQcAchieve, totalPolyTarget, totalPolyAchieve, totalIronTarget, totalIronAchieve)
+                ? _buildFinishingDailyChart(
+                    totalQcTarget,
+                    totalQcAchieve,
+                    totalPolyTarget,
+                    totalPolyAchieve,
+                    totalIronTarget,
+                    totalIronAchieve,
+                  )
                 : BarChart(
                     BarChartData(
                       gridData: const FlGridData(show: false),
                       titlesData: FlTitlesData(
-                        topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        topTitles: AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        rightTitles: AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
                         bottomTitles: AxisTitles(
                           sideTitles: SideTitles(
                             showTitles: true,
                             getTitlesWidget: (value, meta) {
-                              if (value == 0) return const Text('Daily', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold));
+                              if (value == 0)
+                                return const Text(
+                                  'Daily',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                );
                               return const Text('');
                             },
                           ),
@@ -5322,10 +5796,21 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
                             showTitles: true,
                             getTitlesWidget: (value, meta) {
                               final intVal = value.toInt();
-                              final maxInt = ((totalTarget > totalAchieve ? totalTarget : totalAchieve).toDouble() + 50).toInt();
+                              final maxInt =
+                                  ((totalTarget > totalAchieve
+                                                  ? totalTarget
+                                                  : totalAchieve)
+                                              .toDouble() +
+                                          50)
+                                      .toInt();
                               final mid = (maxInt / 2).round();
-                              if (intVal == 0 || intVal == mid || intVal == maxInt) {
-                                return Text('$intVal', style: const TextStyle(fontSize: 9));
+                              if (intVal == 0 ||
+                                  intVal == mid ||
+                                  intVal == maxInt) {
+                                return Text(
+                                  '$intVal',
+                                  style: const TextStyle(fontSize: 9),
+                                );
                               }
                               return const SizedBox.shrink();
                             },
@@ -5341,18 +5826,29 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
                               toY: (totalTarget).toDouble(),
                               color: Colors.orange.withOpacity(0.7),
                               width: 30,
-                              borderRadius: const BorderRadius.only(topLeft: Radius.circular(4), topRight: Radius.circular(4)),
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(4),
+                                topRight: Radius.circular(4),
+                              ),
                             ),
                             BarChartRodData(
                               toY: (totalAchieve).toDouble(),
                               color: Colors.green,
                               width: 30,
-                              borderRadius: const BorderRadius.only(topLeft: Radius.circular(4), topRight: Radius.circular(4)),
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(4),
+                                topRight: Radius.circular(4),
+                              ),
                             ),
                           ],
                         ),
                       ],
-                      maxY: (totalTarget > totalAchieve ? totalTarget : totalAchieve).toDouble() + 50,
+                      maxY:
+                          (totalTarget > totalAchieve
+                                  ? totalTarget
+                                  : totalAchieve)
+                              .toDouble() +
+                          50,
                     ),
                   ),
           ),
@@ -5370,7 +5866,13 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
                   ),
                 ),
                 const SizedBox(width: 6),
-                Text('Target: $totalTarget', style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w600)),
+                Text(
+                  'Target: $totalTarget',
+                  style: const TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 const SizedBox(width: 20),
                 Container(
                   width: 14,
@@ -5381,7 +5883,13 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
                   ),
                 ),
                 const SizedBox(width: 6),
-                Text('Achieve: $totalAchieve', style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w600)),
+                Text(
+                  'Achieve: $totalAchieve',
+                  style: const TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ],
             ),
           ),
@@ -5404,8 +5912,16 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
       BarChartGroupData(
         x: 0,
         barRods: [
-          BarChartRodData(toY: qcTarget.toDouble(), color: Colors.orange.withOpacity(0.7), width: 12),
-          BarChartRodData(toY: qcAchieve.toDouble(), color: Colors.green, width: 12),
+          BarChartRodData(
+            toY: qcTarget.toDouble(),
+            color: Colors.orange.withOpacity(0.7),
+            width: 12,
+          ),
+          BarChartRodData(
+            toY: qcAchieve.toDouble(),
+            color: Colors.green,
+            width: 12,
+          ),
         ],
       ),
     );
@@ -5413,8 +5929,16 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
       BarChartGroupData(
         x: 1,
         barRods: [
-          BarChartRodData(toY: polyTarget.toDouble(), color: Colors.orange.withOpacity(0.7), width: 12),
-          BarChartRodData(toY: polyAchieve.toDouble(), color: Colors.blue, width: 12),
+          BarChartRodData(
+            toY: polyTarget.toDouble(),
+            color: Colors.orange.withOpacity(0.7),
+            width: 12,
+          ),
+          BarChartRodData(
+            toY: polyAchieve.toDouble(),
+            color: Colors.blue,
+            width: 12,
+          ),
         ],
       ),
     );
@@ -5422,8 +5946,16 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
       BarChartGroupData(
         x: 2,
         barRods: [
-          BarChartRodData(toY: ironTarget.toDouble(), color: Colors.orange.withOpacity(0.7), width: 12),
-          BarChartRodData(toY: ironAchieve.toDouble(), color: Colors.purple, width: 12),
+          BarChartRodData(
+            toY: ironTarget.toDouble(),
+            color: Colors.orange.withOpacity(0.7),
+            width: 12,
+          ),
+          BarChartRodData(
+            toY: ironAchieve.toDouble(),
+            color: Colors.purple,
+            width: 12,
+          ),
         ],
       ),
     );
@@ -5443,16 +5975,29 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
             BarChartData(
               gridData: const FlGridData(show: false),
               titlesData: FlTitlesData(
-                topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                topTitles: AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+                rightTitles: AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
                 bottomTitles: AxisTitles(
                   sideTitles: SideTitles(
                     showTitles: true,
                     getTitlesWidget: (value, meta) {
                       final idx = value.toInt();
-                      if (idx == 0) return const Text('QC', style: TextStyle(fontSize: 10));
-                      if (idx == 1) return const Text('Poly', style: TextStyle(fontSize: 10));
-                      if (idx == 2) return const Text('Iron', style: TextStyle(fontSize: 10));
+                      if (idx == 0)
+                        return const Text('QC', style: TextStyle(fontSize: 10));
+                      if (idx == 1)
+                        return const Text(
+                          'Poly',
+                          style: TextStyle(fontSize: 10),
+                        );
+                      if (idx == 2)
+                        return const Text(
+                          'Iron',
+                          style: TextStyle(fontSize: 10),
+                        );
                       return const Text('');
                     },
                   ),
@@ -5464,7 +6009,11 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
                       final intVal = value.toInt();
                       final maxInt = maxY.toInt();
                       final mid = (maxInt / 2).round();
-                      if (intVal == 0 || intVal == mid || intVal == maxInt) return Text('$intVal', style: const TextStyle(fontSize: 9));
+                      if (intVal == 0 || intVal == mid || intVal == maxInt)
+                        return Text(
+                          '$intVal',
+                          style: const TextStyle(fontSize: 9),
+                        );
                       return const SizedBox.shrink();
                     },
                   ),
@@ -5482,19 +6031,47 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(width: 12, height: 12, decoration: BoxDecoration(color: Colors.orange.withOpacity(0.7), borderRadius: BorderRadius.circular(2))),
+              Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.7),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
               const SizedBox(width: 6),
               const Text('Target', style: TextStyle(fontSize: 9)),
               const SizedBox(width: 12),
-              Container(width: 12, height: 12, decoration: BoxDecoration(color: Colors.green, borderRadius: BorderRadius.circular(2))),
+              Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: Colors.green,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
               const SizedBox(width: 6),
               const Text('QC Achieve', style: TextStyle(fontSize: 9)),
               const SizedBox(width: 12),
-              Container(width: 12, height: 12, decoration: BoxDecoration(color: Colors.blue, borderRadius: BorderRadius.circular(2))),
+              Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
               const SizedBox(width: 6),
               const Text('Poly Achieve', style: TextStyle(fontSize: 9)),
               const SizedBox(width: 12),
-              Container(width: 12, height: 12, decoration: BoxDecoration(color: Colors.purple, borderRadius: BorderRadius.circular(2))),
+              Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: Colors.purple,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
               const SizedBox(width: 6),
               const Text('Iron Achieve', style: TextStyle(fontSize: 9)),
             ],
@@ -5527,7 +6104,8 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
     // Sort lines by unit and line number
     final sortedLines = lineMap.values.toList();
     sortedLines.sort((a, b) {
-      if (a.unitNumber != b.unitNumber) return a.unitNumber.compareTo(b.unitNumber);
+      if (a.unitNumber != b.unitNumber)
+        return a.unitNumber.compareTo(b.unitNumber);
       return a.lineNumber.compareTo(b.lineNumber);
     });
 
@@ -5536,25 +6114,35 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
         // Get hourly data for this specific line only
         final lineHourlyData = <int, int>{};
         final lineTargetData = <int, int>{};
-        
+        bool hasAnyData = false;
+
         for (final entry in report.hourlyData.entries) {
           final hour = entry.key;
           final update = entry.value;
-          
+
+          bool foundLine = false;
           for (final l in update.lines) {
-            if (l.unitNumber == line.unitNumber && l.lineNumber == line.lineNumber) {
-              // Only include hours with actual data
+            if (l.unitNumber == line.unitNumber &&
+                l.lineNumber == line.lineNumber) {
+              // Always include the hour to maintain a continuous flow on the x-axis
+              lineHourlyData[hour] = l.achieve;
+              lineTargetData[hour] = l.target;
               if (l.achieve > 0 || l.target > 0) {
-                lineHourlyData[hour] = l.achieve;
-                lineTargetData[hour] = l.target;
+                hasAnyData = true;
               }
+              foundLine = true;
               break;
             }
+          }
+          
+          if (!foundLine) {
+            lineHourlyData[hour] = 0;
+            lineTargetData[hour] = 0;
           }
         }
 
         // Skip if no data at all
-        if (lineHourlyData.isEmpty && lineTargetData.isEmpty) {
+        if (!hasAnyData) {
           return const SizedBox.shrink();
         }
 
@@ -5578,7 +6166,9 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
         totalTarget += h.lines.fold<int>(0, (sum, line) => sum + line.target);
       } else {
         // Filter by unit (for Sewing department)
-        totalTarget += h.lines.where((line) => line.unitNumber == selectedUnit).fold<int>(0, (sum, line) => sum + line.target);
+        totalTarget += h.lines
+            .where((line) => line.unitNumber == selectedUnit)
+            .fold<int>(0, (sum, line) => sum + line.target);
       }
     }
     return totalTarget;
@@ -5589,12 +6179,9 @@ class _ReportCardDisplayState extends State<ReportCardDisplay> with SingleTicker
     int achieve = report.getDailyTotal(selectedUnit: selectedUnit);
     return target - achieve;
   }
-
 }
 
 // ==================== SEWING LINE CARD WIDGET ====================
-
-
 
 // Standalone function to build the sewing line card
 Widget _buildSewingLineCardUI({
@@ -5603,129 +6190,139 @@ Widget _buildSewingLineCardUI({
   required Map<int, int> lineHourlyData,
   required Map<int, int> lineTargetData,
   required bool showDailyView,
-}) 
-{
-  
-    // Calculate totals for this line
-    int totalTarget = lineTargetData.values.fold(0, (sum, val) => sum + val);
-    int totalAchieve = lineHourlyData.values.fold(0, (sum, val) => sum + val);
-    int balance = totalTarget - totalAchieve;
+}) {
+  // Calculate totals for this line
+  int totalTarget = lineTargetData.values.fold(0, (sum, val) => sum + val);
+  int totalAchieve = lineHourlyData.values.fold(0, (sum, val) => sum + val);
+  int balance = totalTarget - totalAchieve;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[300]!),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Line header with toggle button
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(
-              color: Colors.blue[50],
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(8),
-                topRight: Radius.circular(8),
+  return Container(
+    margin: const EdgeInsets.only(bottom: 16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(8),
+      border: Border.all(color: Colors.grey[300]!),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Line header with toggle button
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: Colors.blue[50],
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(8),
+              topRight: Radius.circular(8),
+            ),
+          ),
+          child: Text(
+            'Line ${line.lineNumber} - Unit ${line.unitNumber}',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 15,
+              color: Colors.blue[700],
+            ),
+          ),
+        ),
+        // Info chips
+        Padding(
+          padding: const EdgeInsets.all(12),
+          child: Wrap(
+            spacing: 12,
+            runSpacing: 8,
+            children: [
+              _buildLineInfoChip(context, '🏭 Buyer', line.buyerName),
+              _buildLineInfoChip(context, '🎨 Style', line.style),
+              _buildLineInfoChip(context, '🌈 Color', line.color),
+              _buildLineInfoChip(context, '📦 Item', line.item),
+            ],
+          ),
+        ),
+        // Stats row - plain text
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            children: [
+              Text(
+                'Target',
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
               ),
-            ),
-            child: Text(
-              'Line ${line.lineNumber} - Unit ${line.unitNumber}',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
-                color: Colors.blue[700],
+              const SizedBox(width: 24),
+              Text(
+                'Achieve',
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
               ),
-            ),
+              const SizedBox(width: 24),
+              Text(
+                'Balance',
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              ),
+            ],
           ),
-          // Info chips
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Wrap(
-              spacing: 12,
-              runSpacing: 8,
-              children: [
-                _buildLineInfoChip(context, '🏭 Buyer', line.buyerName),
-                _buildLineInfoChip(context, '🎨 Style', line.style),
-                _buildLineInfoChip(context, '🌈 Color', line.color),
-                _buildLineInfoChip(context, '📦 Item', line.item),
-              ],
-            ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              Text(
+                '$totalTarget Pcs',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(width: 20),
+              Text(
+                '$totalAchieve Pcs',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(width: 20),
+              Text(
+                '$balance Pcs',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+            ],
           ),
-          // Stats row - plain text
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                Text(
-                  'Target',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                ),
-                const SizedBox(width: 24),
-                Text(
-                  'Achieve',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                ),
-                const SizedBox(width: 24),
-                Text(
-                  'Balance',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                Text(
-                  '$totalTarget Pcs',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                ),
-                const SizedBox(width: 20),
-                Text(
-                  '$totalAchieve Pcs',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                ),
-                const SizedBox(width: 20),
-                Text(
-                  '$balance Pcs',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                ),
-              ],
-            ),
-          ),
-          // Chart section (hourly or daily based on toggle)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      showDailyView ? 'Daily Production' : 'Hourly Production',
-                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+        ),
+        // Chart section (hourly or daily based on toggle)
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    showDailyView ? 'Daily Production' : 'Hourly Production',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
                     ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                if (showDailyView)
-                  _buildLineDailyChartWidget(totalTarget, totalAchieve)
-                else
-                  _buildLineHourlyChartWidget(lineHourlyData, lineTargetData),
-              ],
-            ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              if (showDailyView)
+                _buildLineDailyChartWidget(totalTarget, totalAchieve)
+              else
+                _buildLineHourlyChartWidget(lineHourlyData, lineTargetData),
+            ],
           ),
-          const SizedBox(height: 12),
-        ],
-      ),
-    );
-  }
+        ),
+        const SizedBox(height: 12),
+      ],
+    ),
+  );
+}
 
 // Standalone helper functions for sewing line cards
 
@@ -5749,7 +6346,8 @@ Widget _buildLineInfoChip(BuildContext context, String label, String value) {
 // This helper is no longer used - stats are displayed as plain text
 
 Widget _buildLineDailyChartWidget(int totalTarget, int totalAchieve) {
-  final maxValue = (totalTarget > totalAchieve ? totalTarget : totalAchieve).toDouble();
+  final maxValue = (totalTarget > totalAchieve ? totalTarget : totalAchieve)
+      .toDouble();
   final max = (maxValue + (maxValue * 0.1)).toInt();
 
   return Container(
@@ -5770,7 +6368,11 @@ Widget _buildLineDailyChartWidget(int totalTarget, int totalAchieve) {
             sideTitles: SideTitles(
               showTitles: true,
               getTitlesWidget: (value, meta) {
-                if (value == 0) return const Text('Daily Total', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold));
+                if (value == 0)
+                  return const Text(
+                    'Daily Total',
+                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                  );
                 return const Text('');
               },
             ),
@@ -5798,13 +6400,19 @@ Widget _buildLineDailyChartWidget(int totalTarget, int totalAchieve) {
                 toY: totalTarget.toDouble(),
                 color: Colors.orange.withOpacity(0.7),
                 width: 30,
-                borderRadius: const BorderRadius.only(topLeft: Radius.circular(4), topRight: Radius.circular(4)),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(4),
+                  topRight: Radius.circular(4),
+                ),
               ),
               BarChartRodData(
                 toY: totalAchieve.toDouble(),
                 color: Colors.green,
                 width: 30,
-                borderRadius: const BorderRadius.only(topLeft: Radius.circular(4), topRight: Radius.circular(4)),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(4),
+                  topRight: Radius.circular(4),
+                ),
               ),
             ],
           ),
@@ -5815,15 +6423,22 @@ Widget _buildLineDailyChartWidget(int totalTarget, int totalAchieve) {
   );
 }
 
-Widget _buildLineHourlyChartWidget(Map<int, int> achieveData, Map<int, int> targetData) {
-  // Always show all hours 1-9 on X-axis
-  const allHours = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-  
-  if (achieveData.isEmpty && targetData.isEmpty) return const SizedBox(height: 100);
+Widget _buildLineHourlyChartWidget(
+  Map<int, int> achieveData,
+  Map<int, int> targetData,
+) {
+  if (achieveData.isEmpty && targetData.isEmpty)
+    return const SizedBox(height: 100);
+
+  // Get all hours that have data
+  final allHoursSet = <int>{};
+  allHoursSet.addAll(achieveData.keys);
+  allHoursSet.addAll(targetData.keys);
+  final allHours = allHoursSet.toList()..sort();
 
   final barChartData = <BarChartGroupData>[];
 
-  // Add bars for all hours, but only with data if available
+  // Add bars for all hours with data
   for (int i = 0; i < allHours.length; i++) {
     final hour = allHours[i];
     final achieve = achieveData[hour]?.toDouble() ?? 0.0;
@@ -5833,7 +6448,11 @@ Widget _buildLineHourlyChartWidget(Map<int, int> achieveData, Map<int, int> targ
       BarChartGroupData(
         x: i,
         barRods: [
-          BarChartRodData(toY: target, color: Colors.orange.withOpacity(0.7), width: 6),
+          BarChartRodData(
+            toY: target,
+            color: Colors.orange.withOpacity(0.7),
+            width: 6,
+          ),
           BarChartRodData(toY: achieve, color: Colors.green, width: 6),
         ],
       ),
@@ -5867,7 +6486,8 @@ Widget _buildLineHourlyChartWidget(Map<int, int> achieveData, Map<int, int> targ
               showTitles: true,
               getTitlesWidget: (value, meta) {
                 final index = value.toInt();
-                if (index < 0 || index >= allHours.length) return const Text('');
+                if (index < 0 || index >= allHours.length)
+                  return const Text('');
                 final hour = allHours[index];
                 return Text('${hour}h', style: const TextStyle(fontSize: 9));
               },
@@ -5946,9 +6566,7 @@ class _DailyReportDialogState extends State<DailyReportDialog> {
       appBar: AppBar(
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
-        title: Text(
-          '${widget.department} Report',
-        ),
+        title: Text('${widget.department} Report'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -5983,9 +6601,9 @@ class _DailyReportDialogState extends State<DailyReportDialog> {
                     children: [
                       const Text('Date:'),
                       Text(
-                        hourlyUpdates.isNotEmpty 
-                          ? hourlyUpdates.first.date
-                          : DateFormat('yyyy-MM-dd').format(DateTime.now()),
+                        hourlyUpdates.isNotEmpty
+                            ? hourlyUpdates.first.date
+                            : DateFormat('yyyy-MM-dd').format(DateTime.now()),
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
@@ -6038,7 +6656,6 @@ class _DailyReportDialogState extends State<DailyReportDialog> {
                     fontSize: 16,
                   ),
                 ),
-            
               ],
             ),
             const SizedBox(height: 12),
@@ -6056,447 +6673,476 @@ class _DailyReportDialogState extends State<DailyReportDialog> {
                   alignment: Alignment.topCenter,
                   child: const Text(
                     'No hourly updates recorded for this department yet.',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey),
                   ),
                 ),
               )
             else
               ...hourlyUpdates.map((h) {
-              if (widget.department == 'Finishing') {
-                // Show Finishing data
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: Colors.grey[300]!),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          h.hour == 11 ? 'Overtime' : 'Hour ${h.hour}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                            color: Colors.blue,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        // Style, Color, Item
-                        if (h.style.isNotEmpty || h.color.isNotEmpty || h.item.isNotEmpty)
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            margin: const EdgeInsets.only(bottom: 8),
-                            decoration: BoxDecoration(
-                              color: Colors.purple[50],
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: Colors.purple[300]!),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.category, size: 16, color: Colors.purple),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    '${h.style.isNotEmpty ? h.style : '---'} | ${h.color.isNotEmpty ? h.color : '---'} | ${h.item.isNotEmpty ? h.item : '---'}',
-                                    style: const TextStyle(fontSize: 11, color: Colors.purple),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
+                if (widget.department == 'Finishing') {
+                  // Show Finishing data
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: Colors.grey[300]!),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            h.hour == 11 ? 'Overtime' : 'Hour ${h.hour}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              color: Colors.blue,
                             ),
                           ),
-                        // Buyer Names
-                        if (h.buyerNames.isNotEmpty)
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: Colors.blue[50],
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(color: Colors.blue[200]!),
-                                ),
-                                child: Row(
-                                  children: [
-                                    const Icon(Icons.business, size: 16, color: Colors.blue),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        'Buyers: ${h.buyerNames.join(", ")}',
-                                        style: const TextStyle(fontSize: 11, color: Colors.blue),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                          const SizedBox(height: 12),
+                          // Style, Color, Item
+                          if (h.style.isNotEmpty ||
+                              h.color.isNotEmpty ||
+                              h.item.isNotEmpty)
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              margin: const EdgeInsets.only(bottom: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.purple[50],
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(color: Colors.purple[300]!),
                               ),
-                              const SizedBox(height: 8),
-                            ],
-                          ),
-                        // Operator and Manpower
-                        if (h.finishingOperator.isNotEmpty || h.totalFinishingManpower > 0)
-                          Row(
-                            children: [
-                              if (h.finishingOperator.isNotEmpty)
-                                Expanded(
-                                  child: Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: Colors.purple[50],
-                                      borderRadius: BorderRadius.circular(6),
-                                      border: Border.all(color: Colors.purple[200]!),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.category,
+                                    size: 16,
+                                    color: Colors.purple,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      '${h.style.isNotEmpty ? h.style : '---'} | ${h.color.isNotEmpty ? h.color : '---'} | ${h.item.isNotEmpty ? h.item : '---'}',
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.purple,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        const Text(
-                                          'Operator',
-                                          style: TextStyle(fontSize: 9, color: Colors.purple),
-                                        ),
-                                        Text(
-                                          h.finishingOperator,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          // Buyer Names
+                          if (h.buyerNames.isNotEmpty)
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue[50],
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color: Colors.blue[200]!,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.business,
+                                        size: 16,
+                                        color: Colors.blue,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          'Buyers: ${h.buyerNames.join(", ")}',
                                           style: const TextStyle(
                                             fontSize: 11,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.purple,
+                                            color: Colors.blue,
                                           ),
                                           overflow: TextOverflow.ellipsis,
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              if (h.finishingOperator.isNotEmpty && h.totalFinishingManpower > 0)
-                                const SizedBox(width: 8),
-                              if (h.totalFinishingManpower > 0)
-                                Expanded(
-                                  child: Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: Colors.orange[50],
-                                      borderRadius: BorderRadius.circular(6),
-                                      border: Border.all(color: Colors.orange[200]!),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        const Text(
-                                          'Manpower',
-                                          style: TextStyle(fontSize: 9, color: Colors.orange),
-                                        ),
-                                        Text(
-                                          '${h.totalFinishingManpower} Workers',
-                                          style: const TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.orange,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        if (h.finishingOperator.isNotEmpty || h.totalFinishingManpower > 0)
-                          const SizedBox(height: 12),
-                        // QC Section
-                        _buildFinishingReportField(
-                          '✓ QC',
-                          h.qcTarget,
-                          h.qcAchieve,
-                        ),
-                        const SizedBox(height: 10),
-                        // Poly Section
-                        _buildFinishingReportField(
-                          '📦 Poly',
-                          h.polyTarget,
-                          h.polyAchieve,
-                        ),
-                        const SizedBox(height: 10),
-                        // Iron Section
-                        _buildFinishingReportField(
-                          '🔩 Iron',
-                          h.ironTarget,
-                          h.ironAchieve,
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              } else {
-                // Show Line tracking data (original)
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: Colors.grey[300]!),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              h.hour == 9 && widget.department == 'Sewing'
-                                  ? 'Overtime'
-                                  : 'Hour ${h.hour}',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                                color: Colors.blue,
-                              ),
+                                const SizedBox(height: 8),
+                              ],
                             ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.blue,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                'Total: ${h.getTotalInput()} Pcs',
+                          // Operator and Manpower
+                          if (h.finishingOperator.isNotEmpty ||
+                              h.totalFinishingManpower > 0)
+                            Row(
+                              children: [
+                                if (h.finishingOperator.isNotEmpty)
+                                  Expanded(
+                                    child: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.purple[50],
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(
+                                          color: Colors.purple[200]!,
+                                        ),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            'Operator',
+                                            style: TextStyle(
+                                              fontSize: 9,
+                                              color: Colors.purple,
+                                            ),
+                                          ),
+                                          Text(
+                                            h.finishingOperator,
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.purple,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                if (h.finishingOperator.isNotEmpty &&
+                                    h.totalFinishingManpower > 0)
+                                  const SizedBox(width: 8),
+                                if (h.totalFinishingManpower > 0)
+                                  Expanded(
+                                    child: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.orange[50],
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(
+                                          color: Colors.orange[200]!,
+                                        ),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            'Manpower',
+                                            style: TextStyle(
+                                              fontSize: 9,
+                                              color: Colors.orange,
+                                            ),
+                                          ),
+                                          Text(
+                                            '${h.totalFinishingManpower} Workers',
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.orange,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          if (h.finishingOperator.isNotEmpty ||
+                              h.totalFinishingManpower > 0)
+                            const SizedBox(height: 12),
+                          // QC Section
+                          _buildFinishingReportField(
+                            '✓ QC',
+                            h.qcTarget,
+                            h.qcAchieve,
+                          ),
+                          const SizedBox(height: 10),
+                          // Poly Section
+                          _buildFinishingReportField(
+                            '📦 Poly',
+                            h.polyTarget,
+                            h.polyAchieve,
+                          ),
+                          const SizedBox(height: 10),
+                          // Iron Section
+                          _buildFinishingReportField(
+                            '🔩 Iron',
+                            h.ironTarget,
+                            h.ironAchieve,
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                } else {
+                  // Show Line tracking data (original)
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: Colors.grey[300]!),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                h.hour == 9 && widget.department == 'Sewing'
+                                    ? 'Overtime'
+                                    : 'Hour ${h.hour}',
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                  fontSize: 12,
+                                  fontSize: 14,
+                                  color: Colors.blue,
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        ...h.lines.map((line) {
-                          return Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(4),
-                              border: Border.all(color: Colors.grey[300]!),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      widget.department == 'Sewing'
-                                          ? 'Line ${line.lineNumber} - Unit ${line.unitNumber}'
-                                          : (line.style.isNotEmpty ? line.style : ''),
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                    Text(
-                                      'Achieve: ${line.achieve}',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.green,
-                                      ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  'Total: ${h.getTotalInput()} Pcs',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    fontSize: 12,
                                   ),
-                                ],
+                                ),
                               ),
-                              const SizedBox(height: 4),
-                              if (line.buyerName.isNotEmpty)
-                                Text(
-                                  'Buyer: ${line.buyerName}',
-                                  style: const TextStyle(fontSize: 11),
-                                ),
-                              if (line.style.isNotEmpty)
-                                Text(
-                                  'Style: ${line.style}',
-                                  style: const TextStyle(fontSize: 11),
-                                ),
-                              if (line.item.isNotEmpty)
-                                Text(
-                                  'Item: ${line.item}',
-                                  style: const TextStyle(fontSize: 11),
-                                ),
-                              if (widget.department == 'Cutting' &&
-                                  line.color.isNotEmpty)
-                                Text(
-                                  'Color: ${line.color}',
-                                  style: const TextStyle(fontSize: 11),
-                                ),
-                              const SizedBox(height: 4),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    'Target: ${line.target}',
-                                    style: const TextStyle(fontSize: 11),
-                                  ),
-                                  Text(
-                                    'Balance: ${line.balance}',
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      color: Colors.orange,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              if (widget.department == 'Cutting')
-                                Column(
-                                  children: [
-                                    const SizedBox(height: 4),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          'Daily Cutting: ${line.achieve}',
-                                          style: const TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                        Text(
-                                          'Daily Input: ${line.dailyInput}',
-                                          style: const TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'Total Input: ${line.totalInput}',
-                                      style: const TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              if (line.operator.isNotEmpty ||
-                                  line.shortOperator.isNotEmpty ||
-                                  line.helper.isNotEmpty ||
-                                  line.shortHelper.isNotEmpty)
-                                const SizedBox(height: 6),
-                              if (line.operator.isNotEmpty ||
-                                  line.shortOperator.isNotEmpty)
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    if (line.operator.isNotEmpty)
-                                      Expanded(
-                                        child: Text(
-                                          'Operator: ${line.operator}',
-                                          style: const TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ),
-                                    if (line.shortOperator.isNotEmpty)
-                                      Expanded(
-                                        child: Text(
-                                          'Short Op: ${line.shortOperator}',
-                                          style: const TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              if (line.helper.isNotEmpty ||
-                                  line.shortHelper.isNotEmpty)
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    if (line.helper.isNotEmpty)
-                                      Expanded(
-                                        child: Text(
-                                          'Helper: ${line.helper}',
-                                          style: const TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ),
-                                    if (line.shortHelper.isNotEmpty)
-                                      Expanded(
-                                        child: Text(
-                                          'Short Helper: ${line.shortHelper}',
-                                          style: const TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              // Bartech Section - Show for Sewing
-                              if (widget.department == 'Sewing' &&
-                                  (line.bartechOperator.isNotEmpty ||
-                                      line.bartechHelper.isNotEmpty))
-                                Column(
-                                  children: [
-                                    //const SizedBox(height: 6),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        if (line.bartechOperator
-                                            .isNotEmpty)
-                                          Expanded(
-                                            child: Text(
-                                              'Bartech Op: ${line.bartechOperator}',
-                                              style: TextStyle(
-                                                fontSize: 11,
-                                                fontWeight:
-                                                    FontWeight.w500,
-                                              ),
-                                            ),
-                                          ),
-                                        if (line.bartechHelper.isNotEmpty)
-                                          Expanded(
-                                            child: Text(
-                                              'Bartech Helper: ${line.bartechHelper}',
-                                              style: TextStyle(
-                                                fontSize: 11,
-                                                fontWeight:
-                                                    FontWeight.w500,
-                                                //color: Colors.orange[700],
-                                              ),
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
                             ],
                           ),
-                        );
-                      }).toList(),
-                    ],
-                  ),
-                ),
-              );
-            }
-            }).toList(),
+                          const SizedBox(height: 8),
+                          ...h.lines.map((line) {
+                            return Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(color: Colors.grey[300]!),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        widget.department == 'Sewing'
+                                            ? 'Line ${line.lineNumber} - Unit ${line.unitNumber}'
+                                            : (line.style.isNotEmpty
+                                                  ? line.style
+                                                  : ''),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                      Text(
+                                        'Achieve: ${line.achieve}',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.green,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  if (line.buyerName.isNotEmpty)
+                                    Text(
+                                      'Buyer: ${line.buyerName}',
+                                      style: const TextStyle(fontSize: 11),
+                                    ),
+                                  if (line.style.isNotEmpty)
+                                    Text(
+                                      'Style: ${line.style}',
+                                      style: const TextStyle(fontSize: 11),
+                                    ),
+                                  if (line.item.isNotEmpty)
+                                    Text(
+                                      'Item: ${line.item}',
+                                      style: const TextStyle(fontSize: 11),
+                                    ),
+                                  if (widget.department == 'Cutting' &&
+                                      line.color.isNotEmpty)
+                                    Text(
+                                      'Color: ${line.color}',
+                                      style: const TextStyle(fontSize: 11),
+                                    ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Target: ${line.target}',
+                                        style: const TextStyle(fontSize: 11),
+                                      ),
+                                      Text(
+                                        'Balance: ${line.balance}',
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          color: Colors.orange,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  if (widget.department == 'Cutting')
+                                    Column(
+                                      children: [
+                                        const SizedBox(height: 4),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              'Daily Cutting: ${line.achieve}',
+                                              style: const TextStyle(
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                            Text(
+                                              'Daily Input: ${line.dailyInput}',
+                                              style: const TextStyle(
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'Total Input: ${line.totalInput}',
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  if (line.operator.isNotEmpty ||
+                                      line.shortOperator.isNotEmpty ||
+                                      line.helper.isNotEmpty ||
+                                      line.shortHelper.isNotEmpty)
+                                    const SizedBox(height: 6),
+                                  if (line.operator.isNotEmpty ||
+                                      line.shortOperator.isNotEmpty)
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        if (line.operator.isNotEmpty)
+                                          Expanded(
+                                            child: Text(
+                                              'Operator: ${line.operator}',
+                                              style: const TextStyle(
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ),
+                                        if (line.shortOperator.isNotEmpty)
+                                          Expanded(
+                                            child: Text(
+                                              'Short Op: ${line.shortOperator}',
+                                              style: const TextStyle(
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  if (line.helper.isNotEmpty ||
+                                      line.shortHelper.isNotEmpty)
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        if (line.helper.isNotEmpty)
+                                          Expanded(
+                                            child: Text(
+                                              'Helper: ${line.helper}',
+                                              style: const TextStyle(
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ),
+                                        if (line.shortHelper.isNotEmpty)
+                                          Expanded(
+                                            child: Text(
+                                              'Short Helper: ${line.shortHelper}',
+                                              style: const TextStyle(
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  // Bartech Section - Show for Sewing
+                                  if (widget.department == 'Sewing' &&
+                                      (line.bartechOperator.isNotEmpty ||
+                                          line.bartechHelper.isNotEmpty))
+                                    Column(
+                                      children: [
+                                        //const SizedBox(height: 6),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            if (line.bartechOperator.isNotEmpty)
+                                              Expanded(
+                                                child: Text(
+                                                  'Bartech Op: ${line.bartechOperator}',
+                                                  style: TextStyle(
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                              ),
+                                            if (line.bartechHelper.isNotEmpty)
+                                              Expanded(
+                                                child: Text(
+                                                  'Bartech Helper: ${line.bartechHelper}',
+                                                  style: TextStyle(
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.w500,
+                                                    //color: Colors.orange[700],
+                                                  ),
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+              }).toList(),
           ],
         ),
       ),
@@ -6504,9 +7150,7 @@ class _DailyReportDialogState extends State<DailyReportDialog> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.grey[100],
-          border: Border(
-            top: BorderSide(color: Colors.grey[300]!),
-          ),
+          border: Border(top: BorderSide(color: Colors.grey[300]!)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -6562,7 +7206,10 @@ class _DailyReportDialogState extends State<DailyReportDialog> {
     );
   }
 
-  Widget _buildDailySummary(List<HourlyUpdate> hourlyUpdates, String department) {
+  Widget _buildDailySummary(
+    List<HourlyUpdate> hourlyUpdates,
+    String department,
+  ) {
     if (hourlyUpdates.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(16),
@@ -6637,7 +7284,10 @@ class _DailyReportDialogState extends State<DailyReportDialog> {
                       Expanded(
                         child: Text(
                           'Buyers: ${allBuyers.join(", ")}',
-                          style: const TextStyle(fontSize: 11, color: Colors.blue),
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.blue,
+                          ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -6661,12 +7311,19 @@ class _DailyReportDialogState extends State<DailyReportDialog> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.category, size: 16, color: Colors.purple),
+                      const Icon(
+                        Icons.category,
+                        size: 16,
+                        color: Colors.purple,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           '$style | $color | $item',
-                          style: const TextStyle(fontSize: 11, color: Colors.purple),
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.purple,
+                          ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -6692,11 +7349,17 @@ class _DailyReportDialogState extends State<DailyReportDialog> {
                   children: [
                     Text(
                       '✓ QC: $totalQcTarget/$totalQcAchieve',
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     Text(
                       '📦 Poly: $totalPolyTarget/$totalPolyAchieve',
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
@@ -6706,12 +7369,18 @@ class _DailyReportDialogState extends State<DailyReportDialog> {
                   children: [
                     Text(
                       '🔩 Iron: $totalIronTarget/$totalIronAchieve',
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     if (totalManpower > 0)
                       Text(
                         'Manpower: $totalManpower',
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                   ],
                 ),
@@ -6723,11 +7392,7 @@ class _DailyReportDialogState extends State<DailyReportDialog> {
     );
   }
 
-  Widget _buildFinishingReportField(
-    String label,
-    int target,
-    int achieve,
-  ) {
+  Widget _buildFinishingReportField(String label, int target, int achieve) {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
@@ -6740,17 +7405,11 @@ class _DailyReportDialogState extends State<DailyReportDialog> {
         children: [
           Text(
             label,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 12,
-            ),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
           ),
           Row(
             children: [
-              Text(
-                'Target: $target',
-                style: const TextStyle(fontSize: 11),
-              ),
+              Text('Target: $target', style: const TextStyle(fontSize: 11)),
               const SizedBox(width: 12),
               Text(
                 'Achieve: $achieve',
@@ -6824,7 +7483,12 @@ class _HourlyUpdateEditorDialogState extends State<HourlyUpdateEditorDialog> {
 
       unitLines[unit]!.add(nextLineForUnit);
       lines.add(
-        LineData(lineNumber: nextLineForUnit, unitNumber: unit, target: 0, department: widget.department),
+        LineData(
+          lineNumber: nextLineForUnit,
+          unitNumber: unit,
+          target: 0,
+          department: widget.department,
+        ),
       );
     });
   }
@@ -6847,7 +7511,14 @@ class _HourlyUpdateEditorDialogState extends State<HourlyUpdateEditorDialog> {
           ? 1
           : unitLines.keys.reduce((a, b) => a > b ? a : b) + 1;
       unitLines[newUnit] = [1];
-      lines.add(LineData(lineNumber: 1, unitNumber: newUnit, target: 0, department: widget.department));
+      lines.add(
+        LineData(
+          lineNumber: 1,
+          unitNumber: newUnit,
+          target: 0,
+          department: widget.department,
+        ),
+      );
     });
   }
 
@@ -6971,8 +7642,9 @@ class _HourlyUpdateEditorDialogState extends State<HourlyUpdateEditorDialog> {
                                               horizontal: 10,
                                               vertical: 6,
                                             ),
-                                            textStyle:
-                                                const TextStyle(fontSize: 12),
+                                            textStyle: const TextStyle(
+                                              fontSize: 12,
+                                            ),
                                           ),
                                         ),
                                       ],
@@ -6985,8 +7657,9 @@ class _HourlyUpdateEditorDialogState extends State<HourlyUpdateEditorDialog> {
                                             l.unitNumber == unit,
                                       );
                                       return Padding(
-                                        padding:
-                                            const EdgeInsets.only(bottom: 8),
+                                        padding: const EdgeInsets.only(
+                                          bottom: 8,
+                                        ),
                                         child: _buildLineInputRow(unit, line),
                                       );
                                     }).toList(),
@@ -7003,7 +7676,7 @@ class _HourlyUpdateEditorDialogState extends State<HourlyUpdateEditorDialog> {
                           }).toList(),
                   ),
                 ),
-                ),
+              ),
               // Fixed Buttons at Bottom
               Padding(
                 padding: const EdgeInsets.all(16),
@@ -7020,14 +7693,45 @@ class _HourlyUpdateEditorDialogState extends State<HourlyUpdateEditorDialog> {
                         // Populate hourlyUpdate metadata from line inputs so reports can show them
                         widget.hourlyUpdate.lines = lines;
                         // style, color, item - take first non-empty from lines
-                        final firstStyle = lines.firstWhere((l) => l.style.isNotEmpty, orElse: () => LineData(lineNumber: 0, unitNumber: 0, target: 0)).style;
-                        final firstColor = lines.firstWhere((l) => l.color.isNotEmpty, orElse: () => LineData(lineNumber: 0, unitNumber: 0, target: 0)).color;
-                        final firstItem = lines.firstWhere((l) => l.item.isNotEmpty, orElse: () => LineData(lineNumber: 0, unitNumber: 0, target: 0)).item;
+                        final firstStyle = lines
+                            .firstWhere(
+                              (l) => l.style.isNotEmpty,
+                              orElse: () => LineData(
+                                lineNumber: 0,
+                                unitNumber: 0,
+                                target: 0,
+                              ),
+                            )
+                            .style;
+                        final firstColor = lines
+                            .firstWhere(
+                              (l) => l.color.isNotEmpty,
+                              orElse: () => LineData(
+                                lineNumber: 0,
+                                unitNumber: 0,
+                                target: 0,
+                              ),
+                            )
+                            .color;
+                        final firstItem = lines
+                            .firstWhere(
+                              (l) => l.item.isNotEmpty,
+                              orElse: () => LineData(
+                                lineNumber: 0,
+                                unitNumber: 0,
+                                target: 0,
+                              ),
+                            )
+                            .item;
                         widget.hourlyUpdate.style = firstStyle;
                         widget.hourlyUpdate.color = firstColor;
                         widget.hourlyUpdate.item = firstItem;
                         // buyers
-                        widget.hourlyUpdate.buyerNames = lines.map((l) => l.buyerName).where((b) => b.isNotEmpty).toSet().toList();
+                        widget.hourlyUpdate.buyerNames = lines
+                            .map((l) => l.buyerName)
+                            .where((b) => b.isNotEmpty)
+                            .toSet()
+                            .toList();
                         widget.onSave();
                         Navigator.pop(context);
                       },
@@ -7044,14 +7748,13 @@ class _HourlyUpdateEditorDialogState extends State<HourlyUpdateEditorDialog> {
           ),
         ),
       ),
-    
     );
   }
 
   Widget _buildLineInputRow(int unit, LineData line) {
     // For Cutting department: show simplified fields
     // For Sewing/Finishing: show full fields with helpers
-    
+
     if (widget.department == 'Cutting') {
       return _buildCuttingLineInput(unit, line);
     } else {
@@ -7080,7 +7783,9 @@ class _HourlyUpdateEditorDialogState extends State<HourlyUpdateEditorDialog> {
       text: line.balance.toString(),
     );
     final operatorController = TextEditingController(text: line.operator);
-    final shortOperatorController = TextEditingController(text: line.shortOperator);
+    final shortOperatorController = TextEditingController(
+      text: line.shortOperator,
+    );
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -7308,7 +8013,7 @@ class _HourlyUpdateEditorDialogState extends State<HourlyUpdateEditorDialog> {
           // Short Operator field
           TextField(
             controller: shortOperatorController,
-                        keyboardType: TextInputType.number,
+            keyboardType: TextInputType.number,
 
             decoration: InputDecoration(
               labelText: 'Short Operator',
@@ -7335,6 +8040,7 @@ class _HourlyUpdateEditorDialogState extends State<HourlyUpdateEditorDialog> {
     String? selectedItem = line.item.isNotEmpty ? line.item : null;
     String? selectedColor = line.color.isNotEmpty ? line.color : null;
 
+    // Fallback to hard-coded options since widget.style is not available in this dialog
     final buyerOptions = ['Winner Jeans', 'Dreamtex', 'Fashion Fast'];
     final itemOptions = ['T-Shirt', 'Pant', 'Shirt'];
     final styleOptions = ['Style A', 'Style B', 'Style C'];
@@ -7350,11 +8056,17 @@ class _HourlyUpdateEditorDialogState extends State<HourlyUpdateEditorDialog> {
       text: line.balance.toString(),
     );
     final operatorController = TextEditingController(text: line.operator);
-    final shortOperatorController = TextEditingController(text: line.shortOperator);
+    final shortOperatorController = TextEditingController(
+      text: line.shortOperator,
+    );
     final helperController = TextEditingController(text: line.helper);
     final shortHelperController = TextEditingController(text: line.shortHelper);
-    final bartechOperatorController = TextEditingController(text: line.bartechOperator);
-    final bartechHelperController = TextEditingController(text: line.bartechHelper);
+    final bartechOperatorController = TextEditingController(
+      text: line.bartechOperator,
+    );
+    final bartechHelperController = TextEditingController(
+      text: line.bartechHelper,
+    );
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -7390,33 +8102,109 @@ class _HourlyUpdateEditorDialogState extends State<HourlyUpdateEditorDialog> {
           // Buyer field (dropdown)
           DropdownButtonFormField<String>(
             value: selectedBuyer,
-            items: buyerOptions.map((b) => DropdownMenuItem(value: b, child: Text(b, style: const TextStyle(fontSize: 11)))) .toList(),
-            onChanged: (val) { if (val != null) line.buyerName = val; },
-            decoration: InputDecoration(hintText: 'Buyer / Factory', isDense: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(4)), contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8)),
+            items: buyerOptions
+                .map(
+                  (b) => DropdownMenuItem(
+                    value: b,
+                    child: Text(b, style: const TextStyle(fontSize: 11)),
+                  ),
+                )
+                .toList(),
+            onChanged: (val) {
+              if (val != null) line.buyerName = val;
+            },
+            decoration: InputDecoration(
+              hintText: 'Buyer / Factory',
+              isDense: true,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 8,
+              ),
+            ),
           ),
           const SizedBox(height: 8),
           // Style field (dropdown)
           DropdownButtonFormField<String>(
             value: selectedStyle,
-            items: styleOptions.map((s) => DropdownMenuItem(value: s, child: Text(s, style: const TextStyle(fontSize: 11)))) .toList(),
-            onChanged: (val) { if (val != null) line.style = val; },
-            decoration: InputDecoration(labelText: 'Style', isDense: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(4)), contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8)),
+            items: styleOptions
+                .map(
+                  (s) => DropdownMenuItem(
+                    value: s,
+                    child: Text(s, style: const TextStyle(fontSize: 11)),
+                  ),
+                )
+                .toList(),
+            onChanged: (val) {
+              if (val != null) line.style = val;
+            },
+            decoration: InputDecoration(
+              labelText: 'Style',
+              isDense: true,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 8,
+              ),
+            ),
           ),
           const SizedBox(height: 8),
           // Item field (dropdown)
           DropdownButtonFormField<String>(
             value: selectedItem,
-            items: itemOptions.map((it) => DropdownMenuItem(value: it, child: Text(it, style: const TextStyle(fontSize: 11)))) .toList(),
-            onChanged: (val) { if (val != null) line.item = val; },
-            decoration: InputDecoration(labelText: 'Item', isDense: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(4)), contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8)),
+            items: itemOptions
+                .map(
+                  (it) => DropdownMenuItem(
+                    value: it,
+                    child: Text(it, style: const TextStyle(fontSize: 11)),
+                  ),
+                )
+                .toList(),
+            onChanged: (val) {
+              if (val != null) line.item = val;
+            },
+            decoration: InputDecoration(
+              labelText: 'Item',
+              isDense: true,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 8,
+              ),
+            ),
           ),
           const SizedBox(height: 8),
           // Color field (dropdown)
           DropdownButtonFormField<String>(
             value: selectedColor,
-            items: colorOptions.map((c) => DropdownMenuItem(value: c, child: Text(c, style: const TextStyle(fontSize: 11)))) .toList(),
-            onChanged: (val) { if (val != null) line.color = val; },
-            decoration: InputDecoration(labelText: 'Color', isDense: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(4)), contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8)),
+            items: colorOptions
+                .map(
+                  (c) => DropdownMenuItem(
+                    value: c,
+                    child: Text(c, style: const TextStyle(fontSize: 11)),
+                  ),
+                )
+                .toList(),
+            onChanged: (val) {
+              if (val != null) line.color = val;
+            },
+            decoration: InputDecoration(
+              labelText: 'Color',
+              isDense: true,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 8,
+              ),
+            ),
           ),
           const SizedBox(height: 8),
           // Target field
@@ -7476,7 +8264,9 @@ class _HourlyUpdateEditorDialogState extends State<HourlyUpdateEditorDialog> {
               fillColor: Colors.grey[200],
             ),
             style: const TextStyle(fontSize: 11),
-            controller: TextEditingController(text: line.achieve == 0 ? '' : line.achieve.toString()),
+            controller: TextEditingController(
+              text: line.achieve == 0 ? '' : line.achieve.toString(),
+            ),
           ),
           const SizedBox(height: 8),
           // Balance field
@@ -7620,7 +8410,8 @@ class HourlyInputPage extends StatefulWidget {
   final Function onSave;
   final PurchaseOrder? po;
   final StyleItem? style;
-  final Function(PurchaseOrder, StyleItem, String, List<HourlyUpdate>)? onShowSummary;
+  final Function(PurchaseOrder, StyleItem, String, List<HourlyUpdate>)?
+  onShowSummary;
 
   const HourlyInputPage({
     super.key,
@@ -7667,7 +8458,7 @@ class _HourlyInputPageState extends State<HourlyInputPage> {
       final orders = orderManager.getAllOrders();
       if (orders.isNotEmpty) {
         final order = orders[0]; // Primary order
-        
+
         // Remove existing lines for this department, keep other departments' lines
         order.lines.removeWhere((l) => l.department == widget.department);
 
@@ -7717,7 +8508,12 @@ class _HourlyInputPageState extends State<HourlyInputPage> {
 
       unitLines[unit]!.add(nextLineForUnit);
       lines.add(
-        LineData(lineNumber: nextLineForUnit, unitNumber: unit, target: 0, department: widget.department),
+        LineData(
+          lineNumber: nextLineForUnit,
+          unitNumber: unit,
+          target: 0,
+          department: widget.department,
+        ),
       );
     });
   }
@@ -7740,7 +8536,14 @@ class _HourlyInputPageState extends State<HourlyInputPage> {
           ? 1
           : unitLines.keys.reduce((a, b) => a > b ? a : b) + 1;
       unitLines[newUnit] = [1];
-      lines.add(LineData(lineNumber: 1, unitNumber: newUnit, target: 0, department: widget.department));
+      lines.add(
+        LineData(
+          lineNumber: 1,
+          unitNumber: newUnit,
+          target: 0,
+          department: widget.department,
+        ),
+      );
     });
   }
 
@@ -7757,7 +8560,9 @@ class _HourlyInputPageState extends State<HourlyInputPage> {
         appBar: AppBar(
           backgroundColor: Colors.blue,
           foregroundColor: Colors.white,
-          title: Text('Hour ${widget.hourlyUpdate.hour} - ${widget.department}'),
+          title: Text(
+            'Hour ${widget.hourlyUpdate.hour} - ${widget.department}',
+          ),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () => Navigator.pop(context),
@@ -7774,10 +8579,7 @@ class _HourlyInputPageState extends State<HourlyInputPage> {
                 children: [
                   const Text(
                     'Total Achievement',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -7872,7 +8674,9 @@ class _HourlyInputPageState extends State<HourlyInputPage> {
                                           horizontal: 10,
                                           vertical: 6,
                                         ),
-                                        textStyle: const TextStyle(fontSize: 12),
+                                        textStyle: const TextStyle(
+                                          fontSize: 12,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -7886,8 +8690,11 @@ class _HourlyInputPageState extends State<HourlyInputPage> {
                                   );
                                   return Padding(
                                     padding: const EdgeInsets.only(bottom: 12),
-                                    child:
-                                        _buildLineInputRow(unit, line, lineNum),
+                                    child: _buildLineInputRow(
+                                      unit,
+                                      line,
+                                      lineNum,
+                                    ),
                                   );
                                 }).toList(),
                               ],
@@ -7913,9 +8720,7 @@ class _HourlyInputPageState extends State<HourlyInputPage> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.grey[100],
-                border: Border(
-                  top: BorderSide(color: Colors.grey[300]!),
-                ),
+                border: Border(top: BorderSide(color: Colors.grey[300]!)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -7932,27 +8737,68 @@ class _HourlyInputPageState extends State<HourlyInputPage> {
                     ),
                     child: const Text('Cancel'),
                   ),
-                    ElevatedButton(
-                      onPressed: () {
+                  ElevatedButton(
+                    onPressed: () {
                       // Populate hourlyUpdate metadata from line inputs so reports can show them
                       widget.hourlyUpdate.lines = lines;
-                      final firstStyle = lines.firstWhere((l) => l.style.isNotEmpty, orElse: () => LineData(lineNumber: 0, unitNumber: 0, target: 0)).style;
-                      final firstColor = lines.firstWhere((l) => l.color.isNotEmpty, orElse: () => LineData(lineNumber: 0, unitNumber: 0, target: 0)).color;
-                      final firstItem = lines.firstWhere((l) => l.item.isNotEmpty, orElse: () => LineData(lineNumber: 0, unitNumber: 0, target: 0)).item;
+                      final firstStyle = lines
+                          .firstWhere(
+                            (l) => l.style.isNotEmpty,
+                            orElse: () => LineData(
+                              lineNumber: 0,
+                              unitNumber: 0,
+                              target: 0,
+                            ),
+                          )
+                          .style;
+                      final firstColor = lines
+                          .firstWhere(
+                            (l) => l.color.isNotEmpty,
+                            orElse: () => LineData(
+                              lineNumber: 0,
+                              unitNumber: 0,
+                              target: 0,
+                            ),
+                          )
+                          .color;
+                      final firstItem = lines
+                          .firstWhere(
+                            (l) => l.item.isNotEmpty,
+                            orElse: () => LineData(
+                              lineNumber: 0,
+                              unitNumber: 0,
+                              target: 0,
+                            ),
+                          )
+                          .item;
                       widget.hourlyUpdate.style = firstStyle;
                       widget.hourlyUpdate.color = firstColor;
                       widget.hourlyUpdate.item = firstItem;
-                      widget.hourlyUpdate.buyerNames = lines.map((l) => l.buyerName).where((b) => b.isNotEmpty).toSet().toList();
-                      
+                      widget.hourlyUpdate.buyerNames = lines
+                          .map((l) => l.buyerName)
+                          .where((b) => b.isNotEmpty)
+                          .toSet()
+                          .toList();
+
                       // Sync to OrderManager for Supervisor to see
                       _syncToOrderManager(lines);
-                      
+
                       widget.onSave();
-                      
+
                       // Show Summary dialog if po, style, and callback provided
-                      if (widget.po != null && widget.style != null && widget.onShowSummary != null) {
-                        final allHourlyUpdates = widget.style!.departmentHourlyUpdates[widget.department] ?? [];
-                        widget.onShowSummary!(widget.po!, widget.style!, widget.department, allHourlyUpdates);
+                      if (widget.po != null &&
+                          widget.style != null &&
+                          widget.onShowSummary != null) {
+                        final allHourlyUpdates =
+                            widget.style!.departmentHourlyUpdates[widget
+                                .department] ??
+                            [];
+                        widget.onShowSummary!(
+                          widget.po!,
+                          widget.style!,
+                          widget.department,
+                          allHourlyUpdates,
+                        );
                         Navigator.pop(context);
                       } else {
                         Navigator.pop(context);
@@ -7991,7 +8837,10 @@ class _HourlyInputPageState extends State<HourlyInputPage> {
     String? selectedStyle = line.style.isNotEmpty ? line.style : null;
     String? selectedColor = line.color.isNotEmpty ? line.color : null;
 
-    final buyerOptions = ['Winner Jeans', 'Dreamtex', 'Fashion Fast'];
+    // Use actual buyer name from style, fallback to hard-coded options if not available
+    final buyerOptions = widget.style?.buyerName.isNotEmpty == true
+        ? [widget.style!.buyerName]
+        : ['Winner Jeans', 'Dreamtex', 'Fashion Fast'];
     final itemOptions = ['T-Shirt', 'Pant', 'Shirt'];
     final styleOptions = ['Style A', 'Style B', 'Style C'];
     final colorOptions = ['Red', 'Blue', 'Black'];
@@ -8050,30 +8899,106 @@ class _HourlyInputPageState extends State<HourlyInputPage> {
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             value: selectedBuyer,
-            items: buyerOptions.map((b) => DropdownMenuItem(value: b, child: Text(b, style: const TextStyle(fontSize: 11)))) .toList(),
-            onChanged: (val) { if (val != null) line.buyerName = val; },
-            decoration: InputDecoration(labelText: 'Buyer / Factory', isDense: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(4)), contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8)),
+            items: buyerOptions
+                .map(
+                  (b) => DropdownMenuItem(
+                    value: b,
+                    child: Text(b, style: const TextStyle(fontSize: 11)),
+                  ),
+                )
+                .toList(),
+            onChanged: (val) {
+              if (val != null) line.buyerName = val;
+            },
+            decoration: InputDecoration(
+              labelText: 'Buyer / Factory',
+              isDense: true,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 8,
+              ),
+            ),
           ),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             value: selectedItem,
-            items: itemOptions.map((it) => DropdownMenuItem(value: it, child: Text(it, style: const TextStyle(fontSize: 11)))) .toList(),
-            onChanged: (val) { if (val != null) line.item = val; },
-            decoration: InputDecoration(labelText: 'Item', isDense: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(4)), contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8)),
+            items: itemOptions
+                .map(
+                  (it) => DropdownMenuItem(
+                    value: it,
+                    child: Text(it, style: const TextStyle(fontSize: 11)),
+                  ),
+                )
+                .toList(),
+            onChanged: (val) {
+              if (val != null) line.item = val;
+            },
+            decoration: InputDecoration(
+              labelText: 'Item',
+              isDense: true,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 8,
+              ),
+            ),
           ),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             value: selectedStyle,
-            items: styleOptions.map((s) => DropdownMenuItem(value: s, child: Text(s, style: const TextStyle(fontSize: 11)))) .toList(),
-            onChanged: (val) { if (val != null) line.style = val; },
-            decoration: InputDecoration(labelText: 'Style', isDense: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(4)), contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8)),
+            items: styleOptions
+                .map(
+                  (s) => DropdownMenuItem(
+                    value: s,
+                    child: Text(s, style: const TextStyle(fontSize: 11)),
+                  ),
+                )
+                .toList(),
+            onChanged: (val) {
+              if (val != null) line.style = val;
+            },
+            decoration: InputDecoration(
+              labelText: 'Style',
+              isDense: true,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 8,
+              ),
+            ),
           ),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             value: selectedColor,
-            items: colorOptions.map((c) => DropdownMenuItem(value: c, child: Text(c, style: const TextStyle(fontSize: 11)))) .toList(),
-            onChanged: (val) { if (val != null) line.color = val; },
-            decoration: InputDecoration(labelText: 'Color', isDense: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(4)), contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8)),
+            items: colorOptions
+                .map(
+                  (c) => DropdownMenuItem(
+                    value: c,
+                    child: Text(c, style: const TextStyle(fontSize: 11)),
+                  ),
+                )
+                .toList(),
+            onChanged: (val) {
+              if (val != null) line.color = val;
+            },
+            decoration: InputDecoration(
+              labelText: 'Color',
+              isDense: true,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 8,
+              ),
+            ),
           ),
           const SizedBox(height: 8),
           TextField(
@@ -8215,7 +9140,10 @@ class _HourlyInputPageState extends State<HourlyInputPage> {
     String? selectedItem = line.item.isNotEmpty ? line.item : null;
     String? selectedColor = line.color.isNotEmpty ? line.color : null;
 
-    final buyerOptions = ['Winner Jeans', 'Dreamtex', 'Fashion Fast'];
+    // Use actual buyer name from style, fallback to hard-coded options if not available
+    final buyerOptions = widget.style?.buyerName.isNotEmpty == true
+        ? [widget.style!.buyerName]
+        : ['Winner Jeans', 'Dreamtex', 'Fashion Fast'];
     final itemOptions = ['T-Shirt', 'Pant', 'Shirt'];
     final styleOptions = ['Style A', 'Style B', 'Style C'];
     final colorOptions = ['Red', 'Blue', 'Black'];
@@ -8235,8 +9163,12 @@ class _HourlyInputPageState extends State<HourlyInputPage> {
     );
     final helperController = TextEditingController(text: line.helper);
     final shortHelperController = TextEditingController(text: line.shortHelper);
-    final bartechOperatorController = TextEditingController(text: line.bartechOperator);
-    final bartechHelperController = TextEditingController(text: line.bartechHelper);
+    final bartechOperatorController = TextEditingController(
+      text: line.bartechOperator,
+    );
+    final bartechHelperController = TextEditingController(
+      text: line.bartechHelper,
+    );
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -8270,30 +9202,106 @@ class _HourlyInputPageState extends State<HourlyInputPage> {
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             value: selectedBuyer,
-            items: buyerOptions.map((b) => DropdownMenuItem(value: b, child: Text(b, style: const TextStyle(fontSize: 11)))) .toList(),
-            onChanged: (val) { if (val != null) line.buyerName = val; },
-            decoration: InputDecoration(labelText: 'Buyer / Factory', isDense: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(4)), contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8)),
+            items: buyerOptions
+                .map(
+                  (b) => DropdownMenuItem(
+                    value: b,
+                    child: Text(b, style: const TextStyle(fontSize: 11)),
+                  ),
+                )
+                .toList(),
+            onChanged: (val) {
+              if (val != null) line.buyerName = val;
+            },
+            decoration: InputDecoration(
+              labelText: 'Buyer / Factory',
+              isDense: true,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 8,
+              ),
+            ),
           ),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             value: selectedStyle,
-            items: styleOptions.map((s) => DropdownMenuItem(value: s, child: Text(s, style: const TextStyle(fontSize: 11)))) .toList(),
-            onChanged: (val) { if (val != null) line.style = val; },
-            decoration: InputDecoration(labelText: 'Style', isDense: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(4)), contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8)),
+            items: styleOptions
+                .map(
+                  (s) => DropdownMenuItem(
+                    value: s,
+                    child: Text(s, style: const TextStyle(fontSize: 11)),
+                  ),
+                )
+                .toList(),
+            onChanged: (val) {
+              if (val != null) line.style = val;
+            },
+            decoration: InputDecoration(
+              labelText: 'Style',
+              isDense: true,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 8,
+              ),
+            ),
           ),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             value: selectedItem,
-            items: itemOptions.map((it) => DropdownMenuItem(value: it, child: Text(it, style: const TextStyle(fontSize: 11)))) .toList(),
-            onChanged: (val) { if (val != null) line.item = val; },
-            decoration: InputDecoration(labelText: 'Item', isDense: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(4)), contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8)),
+            items: itemOptions
+                .map(
+                  (it) => DropdownMenuItem(
+                    value: it,
+                    child: Text(it, style: const TextStyle(fontSize: 11)),
+                  ),
+                )
+                .toList(),
+            onChanged: (val) {
+              if (val != null) line.item = val;
+            },
+            decoration: InputDecoration(
+              labelText: 'Item',
+              isDense: true,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 8,
+              ),
+            ),
           ),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             value: selectedColor,
-            items: colorOptions.map((c) => DropdownMenuItem(value: c, child: Text(c, style: const TextStyle(fontSize: 11)))) .toList(),
-            onChanged: (val) { if (val != null) line.color = val; },
-            decoration: InputDecoration(labelText: 'Color', isDense: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(4)), contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8)),
+            items: colorOptions
+                .map(
+                  (c) => DropdownMenuItem(
+                    value: c,
+                    child: Text(c, style: const TextStyle(fontSize: 11)),
+                  ),
+                )
+                .toList(),
+            onChanged: (val) {
+              if (val != null) line.color = val;
+            },
+            decoration: InputDecoration(
+              labelText: 'Color',
+              isDense: true,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 8,
+              ),
+            ),
           ),
           const SizedBox(height: 8),
           TextField(
@@ -8500,7 +9508,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text('User Profile',style: TextStyle(color: Colors.white)),
+        title: const Text(
+          'User Profile',
+          style: TextStyle(color: Colors.white),
+        ),
         elevation: 0,
         backgroundColor: Colors.blue,
         actions: [
@@ -8676,8 +9687,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   ),
 
                   const SizedBox(height: 30),
-
-         
 
                   // Settings & Actions
                   _buildSectionHeader('Account Settings'),
@@ -8916,23 +9925,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         leading: Icon(icon, color: Colors.blue),
         title: Text(
           title,
-          style: const TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
         ),
         subtitle: Text(
           subtitle,
-          style: const TextStyle(
-            fontSize: 13,
-            color: Colors.grey,
-          ),
+          style: const TextStyle(fontSize: 13, color: Colors.grey),
         ),
         trailing: const Icon(Icons.chevron_right),
         onTap: onTap,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
@@ -8949,4 +9950,3 @@ extension GroupBy<K, V> on List<V> {
     return map;
   }
 }
-
