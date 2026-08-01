@@ -5292,23 +5292,28 @@ class _ReportCardDisplayState extends State<ReportCardDisplay>
                 return _buildSewingLineCards(report, showDailyView);
               } else {
                 return Container(
-                  padding: const EdgeInsets.all(10),
-                  margin: const EdgeInsets.only(bottom: 8),
+                  margin: const EdgeInsets.only(bottom: 12),
                   decoration: BoxDecoration(
-                    color: Colors.grey[50],
-                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey[200]!),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Department header with buyer, style, color
+                      // Department header section
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                         decoration: BoxDecoration(
-                          color: Colors.blue[50],
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: Colors.blue[200]!),
+                          color: const Color(0xFFEEF2FF),
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(12),
+                            topRight: Radius.circular(12),
+                          ),
+                          border: Border(
+                            bottom: BorderSide(color: Colors.grey[200]!),
+                          ),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -5316,19 +5321,17 @@ class _ReportCardDisplayState extends State<ReportCardDisplay>
                             Text(
                               report.department,
                               style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                                color: Colors.blue,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 13,
+                                color: Color(0xFF1565C0),
                               ),
                             ),
-                            const SizedBox(height: 6),
+                            const SizedBox(height: 8),
                             Wrap(
                               alignment: WrapAlignment.start,
-                              spacing: 8,
-                              runSpacing: 8,
+                              spacing: 6,
+                              runSpacing: 6,
                               children: [
-                                // Show buyers/style/color/item using hourlyData when available for any department
-                                // For Sewing with selected unit, filter data accordingly
                                 if (report.hourlyData.isNotEmpty &&
                                     report.hourlyData.values.any(
                                       (h) => h.buyerNames.isNotEmpty,
@@ -5350,20 +5353,14 @@ class _ReportCardDisplayState extends State<ReportCardDisplay>
                                       ? (report.hourlyData.values
                                                 .firstWhere(
                                                   (h) => h.style.isNotEmpty,
-                                                  orElse: () => report
-                                                      .hourlyData
-                                                      .values
-                                                      .first,
+                                                  orElse: () => report.hourlyData.values.first,
                                                 )
                                                 .style
                                                 .isNotEmpty
                                             ? report.hourlyData.values
                                                   .firstWhere(
                                                     (h) => h.style.isNotEmpty,
-                                                    orElse: () => report
-                                                        .hourlyData
-                                                        .values
-                                                        .first,
+                                                    orElse: () => report.hourlyData.values.first,
                                                   )
                                                   .style
                                             : report.styleName)
@@ -5375,20 +5372,14 @@ class _ReportCardDisplayState extends State<ReportCardDisplay>
                                       ? (report.hourlyData.values
                                                 .firstWhere(
                                                   (h) => h.color.isNotEmpty,
-                                                  orElse: () => report
-                                                      .hourlyData
-                                                      .values
-                                                      .first,
+                                                  orElse: () => report.hourlyData.values.first,
                                                 )
                                                 .color
                                                 .isNotEmpty
                                             ? report.hourlyData.values
                                                   .firstWhere(
                                                     (h) => h.color.isNotEmpty,
-                                                    orElse: () => report
-                                                        .hourlyData
-                                                        .values
-                                                        .first,
+                                                    orElse: () => report.hourlyData.values.first,
                                                   )
                                                   .color
                                             : report.color)
@@ -5400,20 +5391,14 @@ class _ReportCardDisplayState extends State<ReportCardDisplay>
                                       ? (report.hourlyData.values
                                                 .firstWhere(
                                                   (h) => h.item.isNotEmpty,
-                                                  orElse: () => report
-                                                      .hourlyData
-                                                      .values
-                                                      .first,
+                                                  orElse: () => report.hourlyData.values.first,
                                                 )
                                                 .item
                                                 .isNotEmpty
                                             ? report.hourlyData.values
                                                   .firstWhere(
                                                     (h) => h.item.isNotEmpty,
-                                                    orElse: () => report
-                                                        .hourlyData
-                                                        .values
-                                                        .first,
+                                                    orElse: () => report.hourlyData.values.first,
                                                   )
                                                   .item
                                             : report.itemType)
@@ -5424,64 +5409,75 @@ class _ReportCardDisplayState extends State<ReportCardDisplay>
                           ],
                         ),
                       ),
-                      const SizedBox(height: 10),
-                      // Stats
-                      Wrap(
-                        spacing: 12,
-                        children: [
-                          _buildReportStat(
-                            'Target',
-                            '${_calculateDailyTarget(report, selectedUnit: selectedUnitTab)} Pcs',
-                          ),
-                          _buildReportStat(
-                            'Achieve',
-                            '${report.getDailyTotal(selectedUnit: selectedUnitTab)} Pcs',
-                          ),
-                          _buildReportStat(
-                            'Balance',
-                            _calculateBalance(
-                                      report,
-                                      selectedUnit: selectedUnitTab,
-                                    ) >
-                                    0
-                                ? '${_calculateBalance(report, selectedUnit: selectedUnitTab)} Pcs'
-                                : '0 Pcs',
-                          ),
-                        ],
-                      ),
-                      // Hourly breakdown chart or Daily Summary
-                      if (report.hourlyData.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 12),
-                          child: showDailyView
-                              ? _buildReportDailySummary(
-                                  _getFilteredHourlyData(
-                                    report.hourlyData,
-                                    report.department,
-                                  ),
-                                  report.department,
-                                )
-                              : Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Hourly Production',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    _buildHourlyBarChart(
-                                      _getFilteredHourlyData(
-                                        report.hourlyData,
-                                        report.department,
-                                      ),
-                                      report.department,
-                                    ),
-                                  ],
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Stats row
+                            Row(
+                              children: [
+                                _buildStatChip(
+                                  'Target',
+                                  '${_calculateDailyTarget(report, selectedUnit: selectedUnitTab)} Pcs',
+                                  const Color(0xFF1976D2),
+                                  const Color(0xFFEEF2FF),
                                 ),
+                                const SizedBox(width: 8),
+                                _buildStatChip(
+                                  'Achieve',
+                                  '${report.getDailyTotal(selectedUnit: selectedUnitTab)} Pcs',
+                                  const Color(0xFF2E7D32),
+                                  const Color(0xFFE8F5E9),
+                                ),
+                                const SizedBox(width: 8),
+                                _buildStatChip(
+                                  'Balance',
+                                  _calculateBalance(report, selectedUnit: selectedUnitTab) > 0
+                                      ? '${_calculateBalance(report, selectedUnit: selectedUnitTab)} Pcs'
+                                      : '0 Pcs',
+                                  const Color(0xFFF57F17),
+                                  const Color(0xFFFFFDE7),
+                                ),
+                              ],
+                            ),
+                            // Chart
+                            if (report.hourlyData.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 12),
+                                child: showDailyView
+                                    ? _buildReportDailySummary(
+                                        _getFilteredHourlyData(
+                                          report.hourlyData,
+                                          report.department,
+                                        ),
+                                        report.department,
+                                      )
+                                    : Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            'Hourly Production',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w700,
+                                              color: Color(0xFF1565C0),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          _buildHourlyBarChart(
+                                            _getFilteredHourlyData(
+                                              report.hourlyData,
+                                              report.department,
+                                            ),
+                                            report.department,
+                                          ),
+                                        ],
+                                      ),
+                              ),
+                          ],
                         ),
+                      ),
                     ],
                   ),
                 );
@@ -5490,25 +5486,66 @@ class _ReportCardDisplayState extends State<ReportCardDisplay>
           ],
         ),
       ),
+        ],
+      ),
     );
   }
 
+
   Widget _buildInfoChip(String label, String value) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: Colors.grey[300]!),
+        color: const Color(0xFFEEF2FF),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFBBC8F5)),
       ),
       constraints: BoxConstraints(
-        maxWidth: MediaQuery.of(context).size.width * 0.4,
+        maxWidth: MediaQuery.of(context).size.width * 0.42,
       ),
       child: Text(
         '$label: $value',
-        style: const TextStyle(fontSize: 10),
+        style: const TextStyle(
+          fontSize: 11,
+          color: Color(0xFF1565C0),
+          fontWeight: FontWeight.w500,
+        ),
         overflow: TextOverflow.ellipsis,
         maxLines: 1,
+      ),
+    );
+  }
+
+  Widget _buildStatChip(String label, String value, Color textColor, Color bgColor) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                color: textColor.withAlpha(180),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                color: textColor,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
