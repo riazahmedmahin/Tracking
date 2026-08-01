@@ -2260,9 +2260,27 @@ class _ProductionTrackerAppState extends State<ProductionTrackerApp> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('KTL Daily Production '),
+        title: const Text(
+          'KTL Daily Production',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+            fontSize: 20,
+            letterSpacing: 0.5,
+          ),
+        ),
         centerTitle: true,
         elevation: 0,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF1565C0), Color(0xFF1976D2), Color(0xFF42A5F5)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       drawer: _buildDrawer(),
       body: Column(
@@ -2299,117 +2317,164 @@ class _ProductionTrackerAppState extends State<ProductionTrackerApp> {
   }
 
   Widget _buildBottomNavBar() {
-    return Theme(
-      data: ThemeData(
-        splashColor: Colors.transparent,
-        highlightColor: Colors.transparent,
-      ),
-      child: BottomNavigationBar(
-        currentIndex: selectedTabIndex,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        selectedIconTheme: const IconThemeData(size: 28),
-        unselectedIconTheme: const IconThemeData(size: 24),
-        selectedLabelStyle: const TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 12,
-        ),
-        unselectedLabelStyle: const TextStyle(
-          fontWeight: FontWeight.normal,
-          fontSize: 11,
-        ),
-        backgroundColor: Colors.white,
-        elevation: 8,
-        enableFeedback: false,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
-            activeIcon: Icon(Icons.shopping_cart_checkout),
-            label: 'Orders',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.propane_outlined),
-            activeIcon: Icon(Icons.propane_outlined),
-            label: 'Production',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.assignment),
-            activeIcon: Icon(Icons.assignment_turned_in),
-            label: 'Graph Reports',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.note),
-            activeIcon: Icon(Icons.note_alt),
-            label: 'Notes',
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, -4),
           ),
         ],
-        onTap: (index) {
-          setState(() => selectedTabIndex = index);
-        },
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildNavItem(0, Icons.shopping_cart_outlined, Icons.shopping_cart, 'Orders'),
+              _buildNavItem(1, Icons.bar_chart_outlined, Icons.bar_chart, 'Production'),
+              _buildNavItem(2, Icons.insert_chart_outlined, Icons.insert_chart, 'Reports'),
+              _buildNavItem(3, Icons.sticky_note_2_outlined, Icons.sticky_note_2, 'Notes'),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem(int index, IconData icon, IconData activeIcon, String label) {
+    final isActive = selectedTabIndex == index;
+    return GestureDetector(
+      onTap: () => setState(() => selectedTabIndex = index),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isActive ? const Color(0xFF1976D2).withOpacity(0.12) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isActive ? activeIcon : icon,
+              color: isActive ? const Color(0xFF1565C0) : Colors.grey[500],
+              size: isActive ? 26 : 24,
+            ),
+            const SizedBox(height: 3),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: isActive ? FontWeight.w700 : FontWeight.w400,
+                color: isActive ? const Color(0xFF1565C0) : Colors.grey[500],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildDrawer() {
     return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
+      child: Column(
         children: [
-          DrawerHeader(
-            decoration: BoxDecoration(color: Colors.blue),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(20, 56, 20, 24),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: const [
-                CircleAvatar(
-                  radius: 30,
-                  backgroundColor: Colors.white,
-                  child: Icon(Icons.person, size: 30, color: Colors.blue),
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
+                  ),
+                  child: const CircleAvatar(
+                    radius: 32,
+                    backgroundColor: Colors.white24,
+                    child: Icon(Icons.person, size: 34, color: Colors.white),
+                  ),
                 ),
-                SizedBox(height: 10),
-                Text(
+                const SizedBox(height: 14),
+                const Text(
                   'Admin User',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.3,
                   ),
                 ),
+                const SizedBox(height: 2),
                 Text(
                   'admin@ktl.com',
-                  style: TextStyle(color: Colors.white70, fontSize: 12),
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.8),
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),
           ),
-          ListTile(
-            leading: const Icon(Icons.person),
-            title: const Text('Profile'),
-            onTap: () {
-              Navigator.pop(context);
-              _showProfileDialog();
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.settings),
-            title: const Text('Settings'),
-            onTap: () {
-              Navigator.pop(context);
-              _showSettingsDialog();
-            },
-          ),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.logout, color: Colors.red),
-            title: const Text('Logout', style: TextStyle(color: Colors.red)),
-            onTap: () {
-              Navigator.pop(context);
-              _logout();
-            },
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              children: [
+                _buildDrawerTile(Icons.person_outline, 'Profile', () {
+                  Navigator.pop(context);
+                  _showProfileDialog();
+                }),
+                _buildDrawerTile(Icons.settings_outlined, 'Settings', () {
+                  Navigator.pop(context);
+                  _showSettingsDialog();
+                }),
+                const Divider(height: 1, indent: 16, endIndent: 16),
+                const SizedBox(height: 8),
+                _buildDrawerTile(Icons.logout, 'Logout', () {
+                  Navigator.pop(context);
+                  _logout();
+                }, color: Colors.red),
+              ],
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildDrawerTile(IconData icon, String title, VoidCallback onTap, {Color? color}) {
+    return ListTile(
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: (color ?? const Color(0xFF1976D2)).withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(icon, size: 20, color: color ?? const Color(0xFF1976D2)),
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontWeight: FontWeight.w500,
+          color: color ?? Colors.black87,
+        ),
+      ),
+      onTap: onTap,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
     );
   }
 
@@ -4878,14 +4943,29 @@ class _DailyReportsViewState extends State<DailyReportsView>
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Tab Bar
         Container(
-          color: Colors.grey[100],
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF1565C0), Color(0xFF1976D2)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
           child: TabBar(
             controller: _tabController,
-            labelColor: Colors.blue,
-            unselectedLabelColor: Colors.grey[600],
-            indicatorColor: Colors.blue,
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white60,
+            indicatorColor: Colors.white,
+            indicatorWeight: 3,
+            labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+            unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w400, fontSize: 13),
             tabs: const [
               Tab(text: '✂️ Cutting'),
               Tab(text: '🧵 Sewing'),
@@ -4893,15 +4973,17 @@ class _DailyReportsViewState extends State<DailyReportsView>
             ],
           ),
         ),
-        // Tab Content
         Expanded(
-          child: TabBarView(
-            controller: _tabController,
-            children: [
-              _buildDepartmentReportTab('Cutting'),
-              _buildDepartmentReportTab('Sewing'),
-              _buildDepartmentReportTab('Finishing'),
-            ],
+          child: Container(
+            color: const Color(0xFFF5F7FA),
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildDepartmentReportTab('Cutting'),
+                _buildDepartmentReportTab('Sewing'),
+                _buildDepartmentReportTab('Finishing'),
+              ],
+            ),
           ),
         ),
       ],
@@ -5028,51 +5110,95 @@ class _ReportCardDisplayState extends State<ReportCardDisplay>
     }
     final sortedUnits = allUnits.toList()..sort();
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.07),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Card gradient header
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+              ),
+            ),
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                Row(
                   children: [
+                    const Icon(Icons.calendar_today, color: Colors.white70, size: 15),
+                    const SizedBox(width: 6),
                     Text(
                       'Date: ${firstReport.date}',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                        color: Colors.white,
+                      ),
                     ),
-                    // Text(
-                    //   'Date: ${firstReport.date}',
-                    //   style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                    // ),
                   ],
                 ),
-                ElevatedButton.icon(
-                  onPressed: () {
+                GestureDetector(
+                  onTap: () {
                     setState(() {
                       showDailyView = !showDailyView;
                     });
                   },
-                  icon: Icon(
-                    showDailyView ? Icons.list : Icons.calendar_today,
-                    size: 14,
-                  ),
-                  label: Text(showDailyView ? 'View Hourly' : 'View Daily'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.white38),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          showDailyView ? Icons.access_time : Icons.calendar_today,
+                          size: 13,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          showDailyView ? 'View Hourly' : 'View Daily',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ],
             ),
+          ),
+        Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             // Unit tabs for Sewing
             if (department == 'Sewing' && sortedUnits.isNotEmpty) ...[
               const SizedBox(height: 12),
