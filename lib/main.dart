@@ -106,9 +106,9 @@ class Order {
   bool submittedBySupervisor;
 
   Order({required this.orderName, List<OrderLineData>? lines})
-    : createdDate = DateTime.now(),
-      submittedBySupervisor = false,
-      lines = lines ?? [];
+      : createdDate = DateTime.now(),
+        submittedBySupervisor = false,
+        lines = lines ?? [];
 }
 
 class OrderManager {
@@ -154,9 +154,8 @@ class OrderManager {
   List<Order> getOrdersByDepartment(String department) {
     final filteredOrders = <Order>[];
     for (var order in _orders) {
-      final filteredLines = order.lines
-          .where((line) => line.department == department)
-          .toList();
+      final filteredLines =
+          order.lines.where((line) => line.department == department).toList();
       if (filteredLines.isNotEmpty) {
         final filteredOrder = Order(
           orderName: order.orderName,
@@ -198,7 +197,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: ' KTL Daily Production ',
+      title: ' KTL Daily Production track',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
@@ -327,10 +326,10 @@ class _SplashScreenState extends State<SplashScreen>
                             ),
                             child: Center(
                               child: CircularProgressIndicator(
-                                value:
-                                    loadingProgress.expectedTotalBytes != null
+                                value: loadingProgress.expectedTotalBytes !=
+                                        null
                                     ? loadingProgress.cumulativeBytesLoaded /
-                                          loadingProgress.expectedTotalBytes!
+                                        loadingProgress.expectedTotalBytes!
                                     : null,
                                 valueColor: AlwaysStoppedAnimation<Color>(
                                   Colors.white.withOpacity(0.8),
@@ -579,10 +578,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             child: Center(
                               child: CircularProgressIndicator(
-                                value:
-                                    loadingProgress.expectedTotalBytes != null
+                                value: loadingProgress.expectedTotalBytes !=
+                                        null
                                     ? loadingProgress.cumulativeBytesLoaded /
-                                          loadingProgress.expectedTotalBytes!
+                                        loadingProgress.expectedTotalBytes!
                                     : null,
                                 valueColor: AlwaysStoppedAnimation<Color>(
                                   Colors.white.withOpacity(0.8),
@@ -1023,7 +1022,7 @@ class HourlyUpdate {
   String item = ''; // Item type for finishing
 
   HourlyUpdate({required this.hour, this.notes = '', String? date})
-    : date = date ?? DateFormat('yyyy-MM-dd').format(DateTime.now());
+      : date = date ?? DateFormat('yyyy-MM-dd').format(DateTime.now());
 
   int getTotalInput() {
     // For Cutting/Sewing: sum from lines (including both achieve and dailyInput)
@@ -1043,8 +1042,7 @@ class HourlyUpdate {
       (sum, line) => sum + (line.target - (line.achieve + line.dailyInput)),
     );
     // For Finishing: sum from QC, Poly, Iron targets minus achieves
-    int finishingBalance =
-        (qcTarget - qcAchieve) +
+    int finishingBalance = (qcTarget - qcAchieve) +
         (polyTarget - polyAchieve) +
         (ironTarget - ironAchieve);
     return lineTotal + finishingBalance;
@@ -1126,9 +1124,8 @@ class ProductionReport {
     }
     // Filter by unit only (for Sewing department)
     return hourlyData.values.fold(0, (sum, h) {
-      final unitLines = h.lines
-          .where((line) => line.unitNumber == selectedUnit)
-          .toList();
+      final unitLines =
+          h.lines.where((line) => line.unitNumber == selectedUnit).toList();
       int lineTotal = unitLines.fold(0, (s, line) => s + line.achieve);
       return sum + lineTotal;
     });
@@ -1890,14 +1887,14 @@ class _SupervisorInputScreenState extends State<SupervisorInputScreen> {
       if (hourA != hourB) {
         return hourA.compareTo(hourB);
       }
-      
+
       final lineA = a['line'] as LineData;
       final lineB = b['line'] as LineData;
-      
+
       if (lineA.unitNumber != lineB.unitNumber) {
         return lineA.unitNumber.compareTo(lineB.unitNumber);
       }
-      
+
       return lineA.lineNumber.compareTo(lineB.lineNumber);
     });
 
@@ -2044,12 +2041,11 @@ class _SupervisorInputScreenState extends State<SupervisorInputScreen> {
 
     if (!achieveControllers.containsKey(lineKey)) {
       achieveControllers[lineKey] = TextEditingController(
-        text:
-            (UserSession().department == 'Cutting' ||
-                        UserSession().department == 'Sewing'
-                    ? line.achieve
-                    : line.dailyInput)
-                .toString(),
+        text: (UserSession().department == 'Cutting' ||
+                    UserSession().department == 'Sewing'
+                ? line.achieve
+                : line.dailyInput)
+            .toString(),
       );
     }
 
@@ -2293,15 +2289,15 @@ class _ProductionTrackerAppState extends State<ProductionTrackerApp> {
                     onAddPO: _showAddPODialog,
                   )
                 : selectedTabIndex == 1
-                ? ProductionTrackingView(
-                    purchaseOrders: purchaseOrders,
-                    onReportAdded: (report) {
-                      setState(() => productionReports.add(report));
-                    },
-                  )
-                : selectedTabIndex == 2
-                ? DailyReportsView(reports: productionReports)
-                : _buildNotesView(),
+                    ? ProductionTrackingView(
+                        purchaseOrders: purchaseOrders,
+                        onReportAdded: (report) {
+                          setState(() => productionReports.add(report));
+                        },
+                      )
+                    : selectedTabIndex == 2
+                        ? DailyReportsView(reports: productionReports)
+                        : _buildNotesView(),
           ),
         ],
       ),
@@ -2334,10 +2330,14 @@ class _ProductionTrackerAppState extends State<ProductionTrackerApp> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(0, Icons.shopping_cart_outlined, Icons.shopping_cart, 'Orders'),
-              _buildNavItem(1, Icons.bar_chart_outlined, Icons.bar_chart, 'Production'),
-              _buildNavItem(2, Icons.insert_chart_outlined, Icons.insert_chart, 'Reports'),
-              _buildNavItem(3, Icons.sticky_note_2_outlined, Icons.sticky_note_2, 'Notes'),
+              _buildNavItem(0, Icons.shopping_cart_outlined,
+                  Icons.shopping_cart, 'Orders'),
+              _buildNavItem(
+                  1, Icons.bar_chart_outlined, Icons.bar_chart, 'Production'),
+              _buildNavItem(2, Icons.insert_chart_outlined, Icons.insert_chart,
+                  'Reports'),
+              _buildNavItem(3, Icons.sticky_note_2_outlined,
+                  Icons.sticky_note_2, 'Notes'),
             ],
           ),
         ),
@@ -2345,7 +2345,8 @@ class _ProductionTrackerAppState extends State<ProductionTrackerApp> {
     );
   }
 
-  Widget _buildNavItem(int index, IconData icon, IconData activeIcon, String label) {
+  Widget _buildNavItem(
+      int index, IconData icon, IconData activeIcon, String label) {
     final isActive = selectedTabIndex == index;
     return GestureDetector(
       onTap: () => setState(() => selectedTabIndex = index),
@@ -2353,7 +2354,9 @@ class _ProductionTrackerAppState extends State<ProductionTrackerApp> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isActive ? const Color(0xFF1976D2).withOpacity(0.12) : Colors.transparent,
+          color: isActive
+              ? const Color(0xFF1976D2).withOpacity(0.12)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -2455,7 +2458,8 @@ class _ProductionTrackerAppState extends State<ProductionTrackerApp> {
     );
   }
 
-  Widget _buildDrawerTile(IconData icon, String title, VoidCallback onTap, {Color? color}) {
+  Widget _buildDrawerTile(IconData icon, String title, VoidCallback onTap,
+      {Color? color}) {
     return ListTile(
       leading: Container(
         padding: const EdgeInsets.all(8),
@@ -2652,7 +2656,8 @@ class _ProductionTrackerAppState extends State<ProductionTrackerApp> {
                           setState(() {
                             todoNotes.add(
                               TodoNote(
-                                id: DateTime.now().millisecondsSinceEpoch
+                                id: DateTime.now()
+                                    .millisecondsSinceEpoch
                                     .toString(),
                                 title: titleController.text,
                                 content: contentController.text,
@@ -3027,7 +3032,6 @@ class _OrdersListViewState extends State<OrdersListView> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
-
               if (widget.purchaseOrders.isEmpty)
                 Center(
                   child: Padding(
@@ -3233,8 +3237,8 @@ class _DepartmentTrackingViewState extends State<DepartmentTrackingView> {
       int totalHours = widget.department == 'Sewing'
           ? 9
           : widget.department == 'Finishing'
-          ? 11
-          : 8;
+              ? 11
+              : 8;
       for (int i = 1; i <= totalHours; i++) {
         final hourUpdate = HourlyUpdate(hour: i, date: today);
         // Add Unit 1 Line 1 initially
@@ -3268,8 +3272,8 @@ class _DepartmentTrackingViewState extends State<DepartmentTrackingView> {
         int totalHours = widget.department == 'Sewing'
             ? 9
             : widget.department == 'Finishing'
-            ? 11
-            : 8;
+                ? 11
+                : 8;
         hourlyUpdates.clear();
         for (int i = 1; i <= totalHours; i++) {
           final hourUpdate = HourlyUpdate(hour: i, date: today);
@@ -4215,12 +4219,12 @@ class _FinishingInputPageState extends State<FinishingInputPage> {
                               // Use actual buyer name from style, fallback to hard-coded options
                               final buyerOptions =
                                   widget.style?.buyerName.isNotEmpty == true
-                                  ? [widget.style!.buyerName]
-                                  : [
-                                      'Winner Jeans',
-                                      'Dreamtex',
-                                      'Fashion Fast',
-                                    ];
+                                      ? [widget.style!.buyerName]
+                                      : [
+                                          'Winner Jeans',
+                                          'Dreamtex',
+                                          'Fashion Fast',
+                                        ];
                               return buyerOptions.map((buyer) {
                                 return CheckboxListTile(
                                   dense: true,
@@ -4451,8 +4455,7 @@ class _FinishingInputPageState extends State<FinishingInputPage> {
                         final orders = orderManager.getAllOrders();
                         if (orders.isNotEmpty) {
                           final order = orders[0];
-                          final finishingTotal =
-                              widget.update.qcAchieve +
+                          final finishingTotal = widget.update.qcAchieve +
                               widget.update.polyAchieve +
                               widget.update.ironAchieve;
                           // Try to find existing finishing line by style+item+color
@@ -4508,24 +4511,22 @@ class _FinishingInputPageState extends State<FinishingInputPage> {
                             // Only update the Finishing department hourly updates for the specific hour
                             final finishingList =
                                 style.departmentHourlyUpdates['Finishing'] ??
-                                [];
+                                    [];
                             for (var hourly in finishingList) {
                               final buyerMatch =
                                   widget.update.buyerNames.isEmpty
-                                  ? true
-                                  : (hourly.buyerNames.isNotEmpty &&
-                                        hourly.buyerNames.first ==
-                                            widget.update.buyerNames.first);
+                                      ? true
+                                      : (hourly.buyerNames.isNotEmpty &&
+                                          hourly.buyerNames.first ==
+                                              widget.update.buyerNames.first);
                               if (hourly.hour == widget.update.hour &&
                                   hourly.style == widget.update.style &&
                                   buyerMatch) {
                                 hourly.qcAchieve =
                                     hourly.qcAchieve + widget.update.qcAchieve;
-                                hourly.polyAchieve =
-                                    hourly.polyAchieve +
+                                hourly.polyAchieve = hourly.polyAchieve +
                                     widget.update.polyAchieve;
-                                hourly.ironAchieve =
-                                    hourly.ironAchieve +
+                                hourly.ironAchieve = hourly.ironAchieve +
                                     widget.update.ironAchieve;
                                 // Update targets only for the specific hour so targets are unique per hour
                                 hourly.qcTarget = widget.update.qcTarget;
@@ -4964,8 +4965,10 @@ class _DailyReportsViewState extends State<DailyReportsView>
             unselectedLabelColor: Colors.white60,
             indicatorColor: Colors.white,
             indicatorWeight: 3,
-            labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
-            unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w400, fontSize: 13),
+            labelStyle:
+                const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+            unselectedLabelStyle:
+                const TextStyle(fontWeight: FontWeight.w400, fontSize: 13),
             tabs: const [
               Tab(text: '✂️ Cutting'),
               Tab(text: '🧵 Sewing'),
@@ -4991,9 +4994,8 @@ class _DailyReportsViewState extends State<DailyReportsView>
   }
 
   Widget _buildDepartmentReportTab(String department) {
-    final deptReports = widget.reports
-        .where((r) => r.department == department)
-        .toList();
+    final deptReports =
+        widget.reports.where((r) => r.department == department).toList();
 
     // Group by Date -> List of reports
     final groupedByDate = <String, List<ProductionReport>>{};
@@ -5091,9 +5093,8 @@ class _ReportCardDisplayState extends State<ReportCardDisplay>
 
     // Ensure all reports are from the same department
     final department = firstReport.department;
-    final sameDepReports = widget.reports
-        .where((r) => r.department == department)
-        .toList();
+    final sameDepReports =
+        widget.reports.where((r) => r.department == department).toList();
 
     if (sameDepReports.isEmpty) return const SizedBox.shrink();
 
@@ -5145,7 +5146,8 @@ class _ReportCardDisplayState extends State<ReportCardDisplay>
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.calendar_today, color: Colors.white70, size: 15),
+                    const Icon(Icons.calendar_today,
+                        color: Colors.white70, size: 15),
                     const SizedBox(width: 6),
                     Text(
                       'Date: ${firstReport.date}',
@@ -5164,7 +5166,8 @@ class _ReportCardDisplayState extends State<ReportCardDisplay>
                     });
                   },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(20),
@@ -5174,7 +5177,9 @@ class _ReportCardDisplayState extends State<ReportCardDisplay>
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          showDailyView ? Icons.access_time : Icons.calendar_today,
+                          showDailyView
+                              ? Icons.access_time
+                              : Icons.calendar_today,
                           size: 13,
                           color: Colors.white,
                         ),
@@ -5194,303 +5199,328 @@ class _ReportCardDisplayState extends State<ReportCardDisplay>
               ],
             ),
           ),
-        Padding(
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-            // Unit tabs for Sewing
-            if (department == 'Sewing' && sortedUnits.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            selectedUnitTab = -1;
-                          });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          margin: const EdgeInsets.only(right: 8),
-                          decoration: BoxDecoration(
-                            color: selectedUnitTab == -1
-                                ? Colors.blue
-                                : Colors.grey[200],
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: selectedUnitTab == -1
-                                  ? Colors.blue
-                                  : Colors.grey[300]!,
-                            ),
-                          ),
-                          child: Text(
-                            'All Units',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: selectedUnitTab == -1
-                                  ? Colors.white
-                                  : Colors.black87,
-                            ),
-                          ),
-                        ),
-                      ),
-                      ...sortedUnits.map((unit) {
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              selectedUnitTab = unit;
-                            });
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            margin: const EdgeInsets.only(right: 8),
-                            decoration: BoxDecoration(
-                              color: selectedUnitTab == unit
-                                  ? Colors.blue
-                                  : Colors.grey[200],
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: selectedUnitTab == unit
+          Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Unit tabs for Sewing
+                if (department == 'Sewing' && sortedUnits.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                selectedUnitTab = -1;
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              margin: const EdgeInsets.only(right: 8),
+                              decoration: BoxDecoration(
+                                color: selectedUnitTab == -1
                                     ? Colors.blue
-                                    : Colors.grey[300]!,
+                                    : Colors.grey[200],
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: selectedUnitTab == -1
+                                      ? Colors.blue
+                                      : Colors.grey[300]!,
+                                ),
                               ),
-                            ),
-                            child: Text(
-                              'Unit $unit',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: selectedUnitTab == unit
-                                    ? Colors.white
-                                    : Colors.black87,
+                              child: Text(
+                                'All Units',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: selectedUnitTab == -1
+                                      ? Colors.white
+                                      : Colors.black87,
+                                ),
                               ),
                             ),
                           ),
-                        );
-                      }).toList(),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-            const SizedBox(height: 12),
-            ...sameDepReports.map((report) {
-              // For Sewing department, show each line separately
-              if (report.department == 'Sewing') {
-                return _buildSewingLineCards(report, showDailyView);
-              } else {
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey[200]!),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Department header section
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEEF2FF),
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(12),
-                            topRight: Radius.circular(12),
-                          ),
-                          border: Border(
-                            bottom: BorderSide(color: Colors.grey[200]!),
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              report.department,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 13,
-                                color: Color(0xFF1565C0),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Wrap(
-                              alignment: WrapAlignment.start,
-                              spacing: 6,
-                              runSpacing: 6,
-                              children: [
-                                if (report.hourlyData.isNotEmpty &&
-                                    report.hourlyData.values.any(
-                                      (h) => h.buyerNames.isNotEmpty,
-                                    ))
-                                  _buildInfoChip(
-                                    '🏭 Buyer',
-                                    _getFilteredHourlyData(
-                                          report.hourlyData,
-                                          report.department,
-                                        ).values
-                                        .where((h) => h.buyerNames.isNotEmpty)
-                                        .map((h) => h.buyerNames.join(', '))
-                                        .toList()
-                                        .join(', '),
+                          ...sortedUnits.map((unit) {
+                            return GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  selectedUnitTab = unit;
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
+                                margin: const EdgeInsets.only(right: 8),
+                                decoration: BoxDecoration(
+                                  color: selectedUnitTab == unit
+                                      ? Colors.blue
+                                      : Colors.grey[200],
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: selectedUnitTab == unit
+                                        ? Colors.blue
+                                        : Colors.grey[300]!,
                                   ),
-                                _buildInfoChip(
-                                  '🎨 Style',
-                                  report.hourlyData.isNotEmpty
-                                      ? (report.hourlyData.values
-                                                .firstWhere(
-                                                  (h) => h.style.isNotEmpty,
-                                                  orElse: () => report.hourlyData.values.first,
-                                                )
-                                                .style
-                                                .isNotEmpty
-                                            ? report.hourlyData.values
-                                                  .firstWhere(
-                                                    (h) => h.style.isNotEmpty,
-                                                    orElse: () => report.hourlyData.values.first,
-                                                  )
-                                                  .style
-                                            : report.styleName)
-                                      : report.styleName,
                                 ),
-                                _buildInfoChip(
-                                  '🌈 Color',
-                                  report.hourlyData.isNotEmpty
-                                      ? (report.hourlyData.values
-                                                .firstWhere(
-                                                  (h) => h.color.isNotEmpty,
-                                                  orElse: () => report.hourlyData.values.first,
-                                                )
-                                                .color
-                                                .isNotEmpty
-                                            ? report.hourlyData.values
-                                                  .firstWhere(
-                                                    (h) => h.color.isNotEmpty,
-                                                    orElse: () => report.hourlyData.values.first,
-                                                  )
-                                                  .color
-                                            : report.color)
-                                      : report.color,
+                                child: Text(
+                                  'Unit $unit',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: selectedUnitTab == unit
+                                        ? Colors.white
+                                        : Colors.black87,
+                                  ),
                                 ),
-                                _buildInfoChip(
-                                  '📦 Item',
-                                  report.hourlyData.isNotEmpty
-                                      ? (report.hourlyData.values
-                                                .firstWhere(
-                                                  (h) => h.item.isNotEmpty,
-                                                  orElse: () => report.hourlyData.values.first,
-                                                )
-                                                .item
-                                                .isNotEmpty
-                                            ? report.hourlyData.values
-                                                  .firstWhere(
-                                                    (h) => h.item.isNotEmpty,
-                                                    orElse: () => report.hourlyData.values.first,
-                                                  )
-                                                  .item
-                                            : report.itemType)
-                                      : report.itemType,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                              ),
+                            );
+                          }).toList(),
+                        ],
                       ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Stats row
-                            Row(
-                              children: [
-                                _buildStatChip(
-                                  'Target',
-                                  '${_calculateDailyTarget(report, selectedUnit: selectedUnitTab)} Pcs',
-                                  const Color(0xFF1976D2),
-                                  const Color(0xFFEEF2FF),
-                                ),
-                                const SizedBox(width: 8),
-                                _buildStatChip(
-                                  'Achieve',
-                                  '${report.getDailyTotal(selectedUnit: selectedUnitTab)} Pcs',
-                                  const Color(0xFF2E7D32),
-                                  const Color(0xFFE8F5E9),
-                                ),
-                                const SizedBox(width: 8),
-                                _buildStatChip(
-                                  'Balance',
-                                  _calculateBalance(report, selectedUnit: selectedUnitTab) > 0
-                                      ? '${_calculateBalance(report, selectedUnit: selectedUnitTab)} Pcs'
-                                      : '0 Pcs',
-                                  const Color(0xFFF57F17),
-                                  const Color(0xFFFFFDE7),
-                                ),
-                              ],
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 12),
+                ...sameDepReports.map((report) {
+                  // For Sewing department, show each line separately
+                  if (report.department == 'Sewing') {
+                    return _buildSewingLineCards(report, showDailyView);
+                  } else {
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey[200]!),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Department header section
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEEF2FF),
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(12),
+                                topRight: Radius.circular(12),
+                              ),
+                              border: Border(
+                                bottom: BorderSide(color: Colors.grey[200]!),
+                              ),
                             ),
-                            // Chart
-                            if (report.hourlyData.isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 12),
-                                child: showDailyView
-                                    ? _buildReportDailySummary(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  report.department,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 13,
+                                    color: Color(0xFF1565C0),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Wrap(
+                                  alignment: WrapAlignment.start,
+                                  spacing: 6,
+                                  runSpacing: 6,
+                                  children: [
+                                    if (report.hourlyData.isNotEmpty &&
+                                        report.hourlyData.values.any(
+                                          (h) => h.buyerNames.isNotEmpty,
+                                        ))
+                                      _buildInfoChip(
+                                        '🏭 Buyer',
                                         _getFilteredHourlyData(
                                           report.hourlyData,
                                           report.department,
-                                        ),
-                                        report.department,
-                                      )
-                                    : Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          const Text(
-                                            'Hourly Production',
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w700,
-                                              color: Color(0xFF1565C0),
-                                            ),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          _buildHourlyBarChart(
+                                        )
+                                            .values
+                                            .where(
+                                                (h) => h.buyerNames.isNotEmpty)
+                                            .map((h) => h.buyerNames.join(', '))
+                                            .toList()
+                                            .join(', '),
+                                      ),
+                                    _buildInfoChip(
+                                      '🎨 Style',
+                                      report.hourlyData.isNotEmpty
+                                          ? (report.hourlyData.values
+                                                  .firstWhere(
+                                                    (h) => h.style.isNotEmpty,
+                                                    orElse: () => report
+                                                        .hourlyData
+                                                        .values
+                                                        .first,
+                                                  )
+                                                  .style
+                                                  .isNotEmpty
+                                              ? report.hourlyData.values
+                                                  .firstWhere(
+                                                    (h) => h.style.isNotEmpty,
+                                                    orElse: () => report
+                                                        .hourlyData
+                                                        .values
+                                                        .first,
+                                                  )
+                                                  .style
+                                              : report.styleName)
+                                          : report.styleName,
+                                    ),
+                                    _buildInfoChip(
+                                      '🌈 Color',
+                                      report.hourlyData.isNotEmpty
+                                          ? (report.hourlyData.values
+                                                  .firstWhere(
+                                                    (h) => h.color.isNotEmpty,
+                                                    orElse: () => report
+                                                        .hourlyData
+                                                        .values
+                                                        .first,
+                                                  )
+                                                  .color
+                                                  .isNotEmpty
+                                              ? report.hourlyData.values
+                                                  .firstWhere(
+                                                    (h) => h.color.isNotEmpty,
+                                                    orElse: () => report
+                                                        .hourlyData
+                                                        .values
+                                                        .first,
+                                                  )
+                                                  .color
+                                              : report.color)
+                                          : report.color,
+                                    ),
+                                    _buildInfoChip(
+                                      '📦 Item',
+                                      report.hourlyData.isNotEmpty
+                                          ? (report.hourlyData.values
+                                                  .firstWhere(
+                                                    (h) => h.item.isNotEmpty,
+                                                    orElse: () => report
+                                                        .hourlyData
+                                                        .values
+                                                        .first,
+                                                  )
+                                                  .item
+                                                  .isNotEmpty
+                                              ? report.hourlyData.values
+                                                  .firstWhere(
+                                                    (h) => h.item.isNotEmpty,
+                                                    orElse: () => report
+                                                        .hourlyData
+                                                        .values
+                                                        .first,
+                                                  )
+                                                  .item
+                                              : report.itemType)
+                                          : report.itemType,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Stats row
+                                Row(
+                                  children: [
+                                    _buildStatChip(
+                                      'Target',
+                                      '${_calculateDailyTarget(report, selectedUnit: selectedUnitTab)} Pcs',
+                                      const Color(0xFF1976D2),
+                                      const Color(0xFFEEF2FF),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    _buildStatChip(
+                                      'Achieve',
+                                      '${report.getDailyTotal(selectedUnit: selectedUnitTab)} Pcs',
+                                      const Color(0xFF2E7D32),
+                                      const Color(0xFFE8F5E9),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    _buildStatChip(
+                                      'Balance',
+                                      _calculateBalance(report,
+                                                  selectedUnit:
+                                                      selectedUnitTab) >
+                                              0
+                                          ? '${_calculateBalance(report, selectedUnit: selectedUnitTab)} Pcs'
+                                          : '0 Pcs',
+                                      const Color(0xFFF57F17),
+                                      const Color(0xFFFFFDE7),
+                                    ),
+                                  ],
+                                ),
+                                // Chart
+                                if (report.hourlyData.isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 12),
+                                    child: showDailyView
+                                        ? _buildReportDailySummary(
                                             _getFilteredHourlyData(
                                               report.hourlyData,
                                               report.department,
                                             ),
                                             report.department,
+                                          )
+                                        : Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              const Text(
+                                                'Hourly Production',
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: Color(0xFF1565C0),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 8),
+                                              _buildHourlyBarChart(
+                                                _getFilteredHourlyData(
+                                                  report.hourlyData,
+                                                  report.department,
+                                                ),
+                                                report.department,
+                                              ),
+                                            ],
                                           ),
-                                        ],
-                                      ),
-                              ),
-                          ],
-                        ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                );
-              }
-            }).toList(),
-          ],
-        ),
-      ),
+                    );
+                  }
+                }).toList(),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
-
 
   Widget _buildInfoChip(String label, String value) {
     return Container(
@@ -5516,7 +5546,8 @@ class _ReportCardDisplayState extends State<ReportCardDisplay>
     );
   }
 
-  Widget _buildStatChip(String label, String value, Color textColor, Color bgColor) {
+  Widget _buildStatChip(
+      String label, String value, Color textColor, Color bgColor) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
@@ -5583,25 +5614,24 @@ class _ReportCardDisplayState extends State<ReportCardDisplay>
       }
 
       // Create a new HourlyUpdate with filtered lines
-      final filteredUpdate =
-          HourlyUpdate(
-              hour: update.hour,
-              notes: update.notes,
-              date: update.date,
-            )
-            ..lines = filteredLines
-            ..buyerNames = update.buyerNames
-            ..style = update.style
-            ..color = update.color
-            ..item = update.item
-            ..qcTarget = update.qcTarget
-            ..qcAchieve = update.qcAchieve
-            ..polyTarget = update.polyTarget
-            ..polyAchieve = update.polyAchieve
-            ..ironTarget = update.ironTarget
-            ..ironAchieve = update.ironAchieve
-            ..finishingOperator = update.finishingOperator
-            ..totalFinishingManpower = update.totalFinishingManpower;
+      final filteredUpdate = HourlyUpdate(
+        hour: update.hour,
+        notes: update.notes,
+        date: update.date,
+      )
+        ..lines = filteredLines
+        ..buyerNames = update.buyerNames
+        ..style = update.style
+        ..color = update.color
+        ..item = update.item
+        ..qcTarget = update.qcTarget
+        ..qcAchieve = update.qcAchieve
+        ..polyTarget = update.polyTarget
+        ..polyAchieve = update.polyAchieve
+        ..ironTarget = update.ironTarget
+        ..ironAchieve = update.ironAchieve
+        ..finishingOperator = update.finishingOperator
+        ..totalFinishingManpower = update.totalFinishingManpower;
 
       filteredData[hour] = filteredUpdate;
     }
@@ -5959,13 +5989,12 @@ class _ReportCardDisplayState extends State<ReportCardDisplay>
                             showTitles: true,
                             getTitlesWidget: (value, meta) {
                               final intVal = value.toInt();
-                              final maxInt =
-                                  ((totalTarget > totalAchieve
-                                                  ? totalTarget
-                                                  : totalAchieve)
-                                              .toDouble() +
-                                          50)
-                                      .toInt();
+                              final maxInt = ((totalTarget > totalAchieve
+                                              ? totalTarget
+                                              : totalAchieve)
+                                          .toDouble() +
+                                      50)
+                                  .toInt();
                               final mid = (maxInt / 2).round();
                               if (intVal == 0 ||
                                   intVal == mid ||
@@ -6006,8 +6035,7 @@ class _ReportCardDisplayState extends State<ReportCardDisplay>
                           ],
                         ),
                       ],
-                      maxY:
-                          (totalTarget > totalAchieve
+                      maxY: (totalTarget > totalAchieve
                                   ? totalTarget
                                   : totalAchieve)
                               .toDouble() +
@@ -6297,7 +6325,7 @@ class _ReportCardDisplayState extends State<ReportCardDisplay>
               break;
             }
           }
-          
+
           if (!foundLine) {
             lineHourlyData[hour] = 0;
             lineTargetData[hour] = 0;
@@ -6509,8 +6537,8 @@ Widget _buildLineInfoChip(BuildContext context, String label, String value) {
 // This helper is no longer used - stats are displayed as plain text
 
 Widget _buildLineDailyChartWidget(int totalTarget, int totalAchieve) {
-  final maxValue = (totalTarget > totalAchieve ? totalTarget : totalAchieve)
-      .toDouble();
+  final maxValue =
+      (totalTarget > totalAchieve ? totalTarget : totalAchieve).toDouble();
   final max = (maxValue + (maxValue * 0.1)).toInt();
 
   return Container(
@@ -7109,8 +7137,8 @@ class _DailyReportDialogState extends State<DailyReportDialog> {
                                         widget.department == 'Sewing'
                                             ? 'Line ${line.lineNumber} - Unit ${line.unitNumber}'
                                             : (line.style.isNotEmpty
-                                                  ? line.style
-                                                  : ''),
+                                                ? line.style
+                                                : ''),
                                         style: const TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 12,
@@ -8177,7 +8205,6 @@ class _HourlyUpdateEditorDialogState extends State<HourlyUpdateEditorDialog> {
           TextField(
             controller: shortOperatorController,
             keyboardType: TextInputType.number,
-
             decoration: InputDecoration(
               labelText: 'Short Operator',
               isDense: true,
@@ -8574,7 +8601,7 @@ class HourlyInputPage extends StatefulWidget {
   final PurchaseOrder? po;
   final StyleItem? style;
   final Function(PurchaseOrder, StyleItem, String, List<HourlyUpdate>)?
-  onShowSummary;
+      onShowSummary;
 
   const HourlyInputPage({
     super.key,
@@ -8952,9 +8979,8 @@ class _HourlyInputPageState extends State<HourlyInputPage> {
                       if (widget.po != null &&
                           widget.style != null &&
                           widget.onShowSummary != null) {
-                        final allHourlyUpdates =
-                            widget.style!.departmentHourlyUpdates[widget
-                                .department] ??
+                        final allHourlyUpdates = widget.style!
+                                .departmentHourlyUpdates[widget.department] ??
                             [];
                         widget.onShowSummary!(
                           widget.po!,
